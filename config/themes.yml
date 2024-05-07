@@ -2,8 +2,11 @@ default: styles/application.scss
 contrast: styles/contrast.scss
 mastodon-light: styles/mastodon-light.scss
 elephant: styles/elephant-dark.scss
-elephant-contrast: styles/elephant-contrast.scss
 elephant-light: styles/elephant-light.scss
+elephant-contrast: styles/elephant-contrast.scss
 tangerineui: styles/tangerineui.scss
 tangerineui-purple: styles/tangerineui-purple.scss
 tangerineui-cherry: styles/tangerineui-cherry.scss
+Modern: styles/modern.scss
+Modern-light: styles/modern-light.scss
+Modern-contrast: styles/modern-contrast.scss
