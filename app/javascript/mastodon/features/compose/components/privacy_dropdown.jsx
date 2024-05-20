@@ -18,7 +18,7 @@ import { PrivacyDropdownMenu } from './privacy_dropdown_menu';
 const messages = defineMessages({
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
   public_long: { id: 'privacy.public.long', defaultMessage: 'Anyone on and off Mastodon' },
-  unlisted_short: { id: 'privacy.unlisted.short', defaultMessage: 'Quiet public' },
+  unlisted_short: { id: 'privacy.unlisted.short', defaultMessage: 'Public Unlisted' },
   unlisted_long: { id: 'privacy.unlisted.long', defaultMessage: 'Fewer algorithmic fanfares' },
   private_short: { id: 'privacy.private.short', defaultMessage: 'Followers' },
   private_long: { id: 'privacy.private.long', defaultMessage: 'Only your followers' },
