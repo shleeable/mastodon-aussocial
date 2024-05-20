@@ -25,8 +25,8 @@ services:
         hard: 65536
 
   streaming:
-    build: .
-    image: tootsuite/mastodon
+    #build: .
+    image: ghcr.io/mastodon/mastodon-streaming:nightly
     restart: always
     env_file: .env.production
     command: node ./streaming
