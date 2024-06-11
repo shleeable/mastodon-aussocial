@@ -8,8 +8,10 @@ ARG TARGETPLATFORM=${TARGETPLATFORM}
 ARG BUILDPLATFORM=${BUILDPLATFORM}
 
 # Ruby image to use for base image, change with [--build-arg RUBY_VERSION="3.3.x"]
+# renovate: datasource=docker depName=docker.io/ruby
 ARG RUBY_VERSION="3.3.2"
 # # Node version to use in base image, change with [--build-arg NODE_MAJOR_VERSION="20"]
+# renovate: datasource=node-version depName=node
 ARG NODE_MAJOR_VERSION="20"
 # Debian image to use for base image, change with [--build-arg DEBIAN_VERSION="bookworm"]
 ARG DEBIAN_VERSION="bookworm"
@@ -300,11 +302,7 @@ ARG TARGETPLATFORM
 
 RUN \
 # Use Ruby on Rails to create Mastodon assets
-  ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=precompile_placeholder \
-  ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=precompile_placeholder \
-  ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=precompile_placeholder \
-  OTP_SECRET=precompile_placeholder \
-  SECRET_KEY_BASE=precompile_placeholder \
+  SECRET_KEY_BASE_DUMMY=1 \
   bundle exec rails assets:precompile; \
 # Cleanup temporary files
   rm -fr /opt/mastodon/tmp;
