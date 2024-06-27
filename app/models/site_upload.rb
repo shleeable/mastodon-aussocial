@@ -31,10 +31,17 @@ class SiteUpload < ApplicationRecord
         [:"#{size}", { format: 'png', geometry: "#{size}x#{size}#", file_geometry_parser: FastGeometryParser }]
       end.freeze,
 
-    favicon:
+    favicon: {
+      ico: {
+        format: 'ico',
+        geometry: '48x48#',
+        file_geometry_parser: FastGeometryParser,
+      }.freeze,
+    }.merge(
       FAVICON_SIZES.to_h do |size|
         [:"#{size}", { format: 'png', geometry: "#{size}x#{size}#", file_geometry_parser: FastGeometryParser }]
-      end.freeze,
+      end
+    ).freeze,
 
     thumbnail: {
       '@1x': {

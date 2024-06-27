@@ -1,9 +1,10 @@
-import { apiRequestGet, apiRequestPut } from 'mastodon/api';
+import { apiRequest } from 'mastodon/api';
 import type { NotificationPolicyJSON } from 'mastodon/api_types/notification_policies';
 
 export const apiGetNotificationPolicy = () =>
-  apiRequestGet<NotificationPolicyJSON>('/v1/notifications/policy');
+  apiRequest<NotificationPolicyJSON>('GET', '/v1/notifications/policy');
 
 export const apiUpdateNotificationsPolicy = (
   policy: Partial<NotificationPolicyJSON>,
-) => apiRequestPut<NotificationPolicyJSON>('/v1/notifications/policy', policy);
+) =>
+  apiRequest<NotificationPolicyJSON>('PUT', '/v1/notifications/policy', policy);
