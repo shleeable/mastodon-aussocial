@@ -59,49 +59,16 @@ export default function api(withAuthorization = true) {
   });
 }
 
-type RequestParamsOrData = Record<string, unknown>;
-
 export async function apiRequest<ApiResponse = unknown>(
   method: Method,
   url: string,
-  args: {
-    params?: RequestParamsOrData;
-    data?: RequestParamsOrData;
-  } = {},
+  params?: Record<string, unknown>,
 ) {
   const { data } = await api().request<ApiResponse>({
     method,
     url: '/api/' + url,
-    ...args,
+    data: params,
   });
 
   return data;
-}
-
-export async function apiRequestGet<ApiResponse = unknown>(
-  url: string,
-  params?: RequestParamsOrData,
-) {
-  return apiRequest<ApiResponse>('GET', url, { params });
-}
-
-export async function apiRequestPost<ApiResponse = unknown>(
-  url: string,
-  data?: RequestParamsOrData,
-) {
-  return apiRequest<ApiResponse>('POST', url, { data });
-}
-
-export async function apiRequestPut<ApiResponse = unknown>(
-  url: string,
-  data?: RequestParamsOrData,
-) {
-  return apiRequest<ApiResponse>('PUT', url, { data });
-}
-
-export async function apiRequestDelete<ApiResponse = unknown>(
-  url: string,
-  params?: RequestParamsOrData,
-) {
-  return apiRequest<ApiResponse>('DELETE', url, { params });
 }

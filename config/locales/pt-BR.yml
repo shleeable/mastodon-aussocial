@@ -293,7 +293,6 @@ pt-BR:
       filter_by_action: Filtrar por ação
       filter_by_user: Filtrar por usuário
       title: Auditar histórico
-      unavailable_instance: "(nome de domínio indisponível)"
     announcements:
       destroyed_msg: Anúncio excluído!
       edit:

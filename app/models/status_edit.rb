@@ -42,7 +42,7 @@ class StatusEdit < ApplicationRecord
   scope :ordered, -> { order(id: :asc) }
 
   delegate :local?, :application, :edited?, :edited_at,
-           :discarded?, :visibility, :language, to: :status
+           :discarded?, :visibility, to: :status
 
   def emojis
     return @emojis if defined?(@emojis)
