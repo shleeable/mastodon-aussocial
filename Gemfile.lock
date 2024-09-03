@@ -347,7 +347,7 @@ GEM
       rainbow (>= 2.2.2, < 4.0)
       terminal-table (>= 1.5.1)
     idn-ruby (0.1.5)
-    inline_svg (1.9.0)
+    inline_svg (1.10.0)
       activesupport (>= 3.0)
       nokogiri (>= 1.6)
     io-console (0.7.2)
@@ -373,8 +373,8 @@ GEM
     json-ld-preloaded (3.3.0)
       json-ld (~> 3.3)
       rdf (~> 3.3)
-    json-schema (4.3.1)
-      addressable (>= 2.8)
+    json-schema (5.0.0)
+      addressable (~> 2.8)
     jsonapi-renderer (0.2.2)
     jwt (2.7.1)
     kaminari (1.2.2)
@@ -724,10 +724,10 @@ GEM
     rspec-mocks (3.13.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-rails (6.1.4)
-      actionpack (>= 6.1)
-      activesupport (>= 6.1)
-      railties (>= 6.1)
+    rspec-rails (7.0.0)
+      actionpack (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
       rspec-core (~> 3.13)
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
@@ -906,7 +906,7 @@ GEM
     xorcist (1.1.3)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.6.17)
+    zeitwerk (2.6.18)
 
 PLATFORMS
   ruby
@@ -965,7 +965,7 @@ DEPENDENCIES
   irb (~> 1.8)
   json-ld
   json-ld-preloaded (~> 3.2)
-  json-schema (~> 4.0)
+  json-schema (~> 5.0)
   kaminari (~> 1.2)
   kt-paperclip (~> 7.2)
   letter_opener (~> 1.8)
@@ -1024,7 +1024,7 @@ DEPENDENCIES
   redis-namespace (~> 1.10)
   rqrcode (~> 2.2)
   rspec-github (~> 2.4)
-  rspec-rails (~> 6.0)
+  rspec-rails (~> 7.0)
   rspec-sidekiq (~> 5.0)
   rubocop
   rubocop-capybara
