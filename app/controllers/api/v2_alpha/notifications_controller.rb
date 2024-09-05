@@ -46,7 +46,7 @@ class Api::V2Alpha::NotificationsController < Api::BaseController
   end
 
   def show
-    @notification = current_account.notifications.without_suspended.find_by!(group_key: params[:id])
+    @notification = current_account.notifications.without_suspended.find_by!(group_key: params[:group_key])
     presenter = GroupedNotificationsPresenter.new(NotificationGroup.from_notifications([@notification]))
     render json: presenter, serializer: REST::DedupNotificationGroupSerializer
   end
@@ -57,7 +57,7 @@ class Api::V2Alpha::NotificationsController < Api::BaseController
   end
 
   def dismiss
-    current_account.notifications.where(group_key: params[:id]).destroy_all
+    current_account.notifications.where(group_key: params[:group_key]).destroy_all
     render_empty
   end
 
@@ -77,6 +77,8 @@ class Api::V2Alpha::NotificationsController < Api::BaseController
   end
 
   def load_grouped_notifications
+    return [] if @notifications.empty?
+
     MastodonOTELTracer.in_span('Api::V2Alpha::NotificationsController#load_grouped_notifications') do
       NotificationGroup.from_notifications(@notifications, pagination_range: (@notifications.last.id)..(@notifications.first.id), grouped_types: params[:grouped_types])
     end
