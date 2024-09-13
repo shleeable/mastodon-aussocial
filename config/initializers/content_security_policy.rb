@@ -11,15 +11,16 @@ require_relative '../../app/lib/content_security_policy'
 policy = ContentSecurityPolicy.new
 assets_host = policy.assets_host
 media_hosts = policy.media_hosts
+wasabi_host = 'https://s3.ap-southeast-2.wasabisys.com'
 
 Rails.application.config.content_security_policy do |p|
   p.base_uri        :none
   p.default_src     :none
   p.frame_ancestors :none
   p.font_src        :self, assets_host
-  p.img_src         :self, :data, :blob, *media_hosts
+  p.img_src         :self, :data, :blob, *media_hosts, wasabi_host
   p.style_src       :self, assets_host
-  p.media_src       :self, :data, *media_hosts
+  p.media_src       :self, :data, *media_hosts, wasabi_host
   p.manifest_src    :self, assets_host
 
   if policy.sso_host.present?
