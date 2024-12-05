@@ -3,6 +3,7 @@
 User-agent: *
 Disallow: /media_proxy/
 Disallow: /interact/
+Disallow: /api/v1/instance/domain_blocks
 
 ###############################################################################################################################
 # AI Bots - Crawlers/scrapers and data harvesters. Blocking these should not negatively effect the end user.
