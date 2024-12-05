@@ -11,15 +11,16 @@ require_relative '../../app/lib/content_security_policy'
 policy = ContentSecurityPolicy.new
 assets_host = policy.assets_host
 media_hosts = policy.media_hosts
+wasabi_host = 'https://s3.ap-southeast-2.wasabisys.com'
 
 Rails.application.config.content_security_policy do |p|
   p.base_uri        :none
   p.default_src     :none
   p.frame_ancestors :none
   p.font_src        :self, assets_host
-  p.img_src         :self, :data, :blob, *media_hosts
+  p.img_src         :self, :data, :blob, *media_hosts, wasabi_host
   p.style_src       :self, assets_host
-  p.media_src       :self, :data, *media_hosts
+  p.media_src       :self, :data, *media_hosts, wasabi_host
   p.manifest_src    :self, assets_host
 
   if policy.sso_host.present?
@@ -35,11 +36,11 @@ Rails.application.config.content_security_policy do |p|
     webpacker_public_host = ENV.fetch('WEBPACKER_DEV_SERVER_PUBLIC', Webpacker.config.dev_server[:public])
     front_end_build_urls = %w(ws http).map { |protocol| "#{protocol}#{Webpacker.dev_server.https? ? 's' : ''}://#{webpacker_public_host}" }
 
-    p.connect_src :self, :data, :blob, *media_hosts, Rails.configuration.x.streaming_api_base_url, *front_end_build_urls
+    p.connect_src :self, :data, :blob, *media_hosts, wasabi_host, Rails.configuration.x.streaming_api_base_url, *front_end_build_urls
     p.script_src  :self, :unsafe_inline, :unsafe_eval, assets_host
     p.frame_src   :self, :https, :http
   else
-    p.connect_src :self, :data, :blob, *media_hosts, Rails.configuration.x.streaming_api_base_url
+    p.connect_src :self, :data, :blob, *media_hosts, wasabi_host, Rails.configuration.x.streaming_api_base_url
     p.script_src  :self, assets_host, "'wasm-unsafe-eval'"
     p.frame_src   :self, :https
   end
