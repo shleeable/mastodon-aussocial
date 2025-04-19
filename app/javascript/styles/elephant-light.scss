@@ -1,5 +1,5 @@
-@import 'mastodon-light/variables';
-@import 'application';
-@import 'mastodon-light/diff';
-@import 'elephant/layout-single-column.scss';
-@import 'elephant/layout-multiple-columns.scss';
+@use 'mastodon-light/variables';
+@use 'application';
+@use 'mastodon-light/diff';
+@use 'elephant/layout-single-column.scss';
+@use 'elephant/layout-multiple-columns.scss';
