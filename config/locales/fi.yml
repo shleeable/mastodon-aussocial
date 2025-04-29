@@ -495,9 +495,12 @@ fi:
         registrations:
           confirm: Vahvista
           reject: Hylkää
+          title: Vahvista FASP-rekisteröinti
         save: Tallenna
+        select_capabilities: Valitse kyvykkyydet
         sign_in: Kirjaudu sisään
         status: Tila
+      title: FASP
     follow_recommendations:
       description_html: "<strong>Seurantasuositukset auttavat uusia käyttäjiä löytämään nopeasti kiinnostavaa sisältöä</strong>. Kun käyttäjä ei ole ollut tarpeeksi vuorovaikutuksessa muiden kanssa, jotta hänelle olisi muodostunut henkilökohtaisia seuraamissuosituksia, suositellaan niiden sijaan näitä tilejä. Ne lasketaan päivittäin uudelleen yhdistelmästä tilejä, jotka ovat viime aikoina olleet aktiivisimmin sitoutuneita ja joilla on suurimmat paikalliset seuraajamäärät tietyllä kielellä."
       language: Kielelle
@@ -891,6 +894,8 @@ fi:
     system_checks:
       database_schema_check:
         message_html: Tietokannan siirto on vireillä. Suorita ne varmistaaksesi, että sovellus toimii odotetulla tavalla
+      elasticsearch_analysis_index_mismatch:
+        message_html: Elasticsearch-indeksin analysaattoriasetukset ovat vanhentuneet. Suorita <code>tootctl search deploy --only-mapping --only=%{value}</code>
       elasticsearch_health_red:
         message_html: Elasticsearch-klusteri on vikatilassa (punainen tila), joten hakuominaisuudet eivät ole käytettävissä
       elasticsearch_health_yellow:
