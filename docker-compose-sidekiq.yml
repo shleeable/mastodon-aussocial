@@ -12,7 +12,7 @@ services:
     volumes:
       - ./public/system:/mastodon/public/system
     healthcheck:
-      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
     ulimits:
       memlock:
         soft: -1
@@ -36,7 +36,7 @@ services:
     volumes:
       - ./public/system:/mastodon/public/system
     healthcheck:
-      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
     ulimits:
       memlock:
         soft: -1
@@ -60,7 +60,7 @@ services:
     volumes:
       - ./public/system:/mastodon/public/system
     healthcheck:
-      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
     ulimits:
       memlock:
         soft: -1
@@ -84,7 +84,7 @@ services:
     volumes:
       - ./public/system:/mastodon/public/system
     healthcheck:
-      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
     ulimits:
       memlock:
         soft: -1
@@ -108,7 +108,7 @@ services:
     volumes:
       - ./public/system:/mastodon/public/system
     healthcheck:
-      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
+      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
 
 
 networks:
