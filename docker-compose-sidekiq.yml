@@ -101,7 +101,7 @@ services:
     image: tootsuite/mastodon
     restart: always
     env_file: .env.production
-    command: bundle exec sidekiq -q scheduler,1 -q mailers,5 -c 5
+    command: bundle exec sidekiq -q scheduler,1 -q fasp,2 -q mailers,5 -c 5
     networks:
       - external_network
       - internal_network
