@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { defineMessages, useIntl } from 'react-intl';
 
@@ -22,7 +22,6 @@ import NotificationsIcon from '@/material-icons/400-24px/notifications.svg?react
 import PersonAddActiveIcon from '@/material-icons/400-24px/person_add-fill.svg?react';
 import PersonAddIcon from '@/material-icons/400-24px/person_add.svg?react';
 import PublicIcon from '@/material-icons/400-24px/public.svg?react';
-import SearchIcon from '@/material-icons/400-24px/search.svg?react';
 import SettingsIcon from '@/material-icons/400-24px/settings.svg?react';
 import StarActiveIcon from '@/material-icons/400-24px/star-fill.svg?react';
 import StarIcon from '@/material-icons/400-24px/star.svg?react';
@@ -32,7 +31,8 @@ import { openNavigation, closeNavigation } from 'mastodon/actions/navigation';
 import { Account } from 'mastodon/components/account';
 import { IconWithBadge } from 'mastodon/components/icon_with_badge';
 import { WordmarkLogo } from 'mastodon/components/logo';
-import { NavigationPortal } from 'mastodon/components/navigation_portal';
+import { Search } from 'mastodon/features/compose/components/search';
+import { ColumnLink } from 'mastodon/features/ui/components/column_link';
 import { useBreakpoint } from 'mastodon/features/ui/hooks/useBreakpoint';
 import { useIdentity } from 'mastodon/identity_context';
 import { timelinePreview, trendsEnabled, me } from 'mastodon/initial_state';
@@ -40,11 +40,12 @@ import { transientSingleColumn } from 'mastodon/is_mobile';
 import { selectUnreadNotificationGroupsCount } from 'mastodon/selectors/notifications';
 import { useAppSelector, useAppDispatch } from 'mastodon/store';
 
-import { ColumnLink } from './column_link';
-import DisabledAccountBanner from './disabled_account_banner';
-import { ListPanel } from './list_panel';
-import { MoreLink } from './more_link';
-import SignInBanner from './sign_in_banner';
+import { DisabledAccountBanner } from './components/disabled_account_banner';
+import { FollowedTagsPanel } from './components/followed_tags_panel';
+import { ListPanel } from './components/list_panel';
+import { MoreLink } from './components/more_link';
+import { SignInBanner } from './components/sign_in_banner';
+import { Trends } from './components/trends';
 
 const messages = defineMessages({
   home: { id: 'tabs_bar.home', defaultMessage: 'Home' },
@@ -67,6 +68,10 @@ const messages = defineMessages({
   },
   about: { id: 'navigation_bar.about', defaultMessage: 'About' },
   search: { id: 'navigation_bar.search', defaultMessage: 'Search' },
+  searchTrends: {
+    id: 'navigation_bar.search_trends',
+    defaultMessage: 'Search / Trending',
+  },
   advancedInterface: {
     id: 'navigation_bar.advanced_interface',
     defaultMessage: 'Open in advanced web interface',
@@ -159,33 +164,6 @@ const FollowRequestsLink: React.FC = () => {
   );
 };
 
-const SearchLink: React.FC = () => {
-  const intl = useIntl();
-  const showAsSearch = useBreakpoint('full');
-
-  if (!trendsEnabled || showAsSearch) {
-    return (
-      <ColumnLink
-        transparent
-        to={trendsEnabled ? '/explore' : '/search'}
-        icon='search'
-        iconComponent={SearchIcon}
-        text={intl.formatMessage(messages.search)}
-      />
-    );
-  }
-
-  return (
-    <ColumnLink
-      transparent
-      to='/explore'
-      icon='explore'
-      iconComponent={TrendingUpIcon}
-      text={intl.formatMessage(messages.explore)}
-    />
-  );
-};
-
 const ProfileCard: React.FC = () => {
   if (!me) {
     return null;
@@ -198,6 +176,13 @@ const ProfileCard: React.FC = () => {
   );
 };
 
+const isFirehoseActive = (
+  match: unknown,
+  { pathname }: { pathname: string },
+) => {
+  return !!match || pathname.startsWith('/public');
+};
+
 const MENU_WIDTH = 284;
 
 export const NavigationPanel: React.FC = () => {
@@ -206,6 +191,7 @@ export const NavigationPanel: React.FC = () => {
   const open = useAppSelector((state) => state.navigation.open);
   const dispatch = useAppDispatch();
   const openable = useBreakpoint('openable');
+  const showSearch = useBreakpoint('full');
   const location = useLocation();
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
@@ -235,14 +221,18 @@ export const NavigationPanel: React.FC = () => {
     };
   }, [dispatch]);
 
+  const isLtrDir = getComputedStyle(document.body).direction !== 'rtl';
+
+  const OPEN_MENU_OFFSET = isLtrDir ? MENU_WIDTH : -MENU_WIDTH;
+
   const [{ x }, spring] = useSpring(
     () => ({
-      x: open ? 0 : MENU_WIDTH,
+      x: open ? 0 : OPEN_MENU_OFFSET,
       onRest: {
         x({ value }: { value: number }) {
           if (value === 0) {
             dispatch(openNavigation());
-          } else if (value > 0) {
+          } else if (isLtrDir ? value > 0 : value < 0) {
             dispatch(closeNavigation());
           }
         },
@@ -252,34 +242,40 @@ export const NavigationPanel: React.FC = () => {
   );
 
   const bind = useDrag(
-    ({ last, offset: [ox], velocity: [vx], direction: [dx], cancel }) => {
-      if (ox < -70) {
+    ({
+      last,
+      offset: [xOffset],
+      velocity: [xVelocity],
+      direction: [xDirection],
+      cancel,
+    }) => {
+      const logicalXDirection = isLtrDir ? xDirection : -xDirection;
+      const logicalXOffset = isLtrDir ? xOffset : -xOffset;
+      const hasReachedDragThreshold = logicalXOffset < -70;
+
+      if (hasReachedDragThreshold) {
         cancel();
       }
 
       if (last) {
-        if (ox > MENU_WIDTH / 2 || (vx > 0.5 && dx > 0)) {
-          void spring.start({ x: MENU_WIDTH });
+        const isAboveOpenThreshold = logicalXOffset > MENU_WIDTH / 2;
+        const isQuickFlick = xVelocity > 0.5 && logicalXDirection > 0;
+
+        if (isAboveOpenThreshold || isQuickFlick) {
+          void spring.start({ x: OPEN_MENU_OFFSET });
         } else {
           void spring.start({ x: 0 });
         }
       } else {
-        void spring.start({ x: ox, immediate: true });
+        void spring.start({ x: xOffset, immediate: true });
       }
     },
     {
       from: () => [x.get(), 0],
       filterTaps: true,
-      bounds: { left: 0 },
+      bounds: isLtrDir ? { left: 0 } : { right: 0 },
       rubberband: true,
     },
-  );
-
-  const isFirehoseActive = useCallback(
-    (match: unknown, location: { pathname: string }): boolean => {
-      return !!match || location.pathname.startsWith('/public');
-    },
-    [],
   );
 
   const previouslyFocusedElementRef = useRef<HTMLElement | null>();
@@ -297,7 +293,7 @@ export const NavigationPanel: React.FC = () => {
     }
   }, [open]);
 
-  let banner = undefined;
+  let banner: React.ReactNode;
 
   if (transientSingleColumn) {
     banner = (
@@ -335,6 +331,8 @@ export const NavigationPanel: React.FC = () => {
             </Link>
           </div>
 
+          {showSearch && <Search singleColumn />}
+
           <ProfileCard />
 
           {banner && <div className='navigation-panel__banner'>{banner}</div>}
@@ -358,43 +356,49 @@ export const NavigationPanel: React.FC = () => {
                   activeIconComponent={HomeActiveIcon}
                   text={intl.formatMessage(messages.home)}
                 />
-                <NotificationsLink />
-                <FollowRequestsLink />
               </>
             )}
 
-            <SearchLink />
+            {trendsEnabled && (
+              <ColumnLink
+                transparent
+                to='/explore'
+                icon='explore'
+                iconComponent={TrendingUpIcon}
+                text={intl.formatMessage(messages.explore)}
+              />
+            )}
 
             {(signedIn || timelinePreview) && (
               <ColumnLink
                 transparent
                 to='/public/local'
-                isActive={isFirehoseActive}
                 icon='globe'
                 iconComponent={PublicIcon}
+                isActive={isFirehoseActive}
                 text={intl.formatMessage(messages.firehose)}
               />
             )}
 
-            {!signedIn && (
-              <div className='navigation-panel__sign-in-banner'>
-                <hr />
-                {disabledAccountId ? (
-                  <DisabledAccountBanner />
-                ) : (
-                  <SignInBanner />
-                )}
-              </div>
-            )}
-
             {signedIn && (
               <>
+                <NotificationsLink />
+
+                <FollowRequestsLink />
+
+                <hr />
+
+                <ListPanel />
+
+                <FollowedTagsPanel />
+
                 <ColumnLink
                   transparent
-                  to='/conversations'
-                  icon='at'
-                  iconComponent={AlternateEmailIcon}
-                  text={intl.formatMessage(messages.direct)}
+                  to='/favourites'
+                  icon='star'
+                  iconComponent={StarIcon}
+                  activeIconComponent={StarActiveIcon}
+                  text={intl.formatMessage(messages.favourites)}
                 />
                 <ColumnLink
                   transparent
@@ -406,14 +410,11 @@ export const NavigationPanel: React.FC = () => {
                 />
                 <ColumnLink
                   transparent
-                  to='/favourites'
-                  icon='star'
-                  iconComponent={StarIcon}
-                  activeIconComponent={StarActiveIcon}
-                  text={intl.formatMessage(messages.favourites)}
+                  to='/conversations'
+                  icon='at'
+                  iconComponent={AlternateEmailIcon}
+                  text={intl.formatMessage(messages.direct)}
                 />
-
-                <ListPanel />
 
                 <hr />
 
@@ -430,8 +431,6 @@ export const NavigationPanel: React.FC = () => {
             )}
 
             <div className='navigation-panel__legal'>
-              <hr />
-
               <ColumnLink
                 transparent
                 to='/about'
@@ -440,11 +439,23 @@ export const NavigationPanel: React.FC = () => {
                 text={intl.formatMessage(messages.about)}
               />
             </div>
+
+            {!signedIn && (
+              <div className='navigation-panel__sign-in-banner'>
+                <hr />
+
+                {disabledAccountId ? (
+                  <DisabledAccountBanner />
+                ) : (
+                  <SignInBanner />
+                )}
+              </div>
+            )}
           </div>
 
           <div className='flex-spacer' />
 
-          <NavigationPortal />
+          <Trends />
         </div>
       </animated.div>
     </div>
