@@ -189,29 +189,30 @@ async function findEntrypoints() {
   const entrypoints: Record<string, string> = {};
 
   // First, JS entrypoints
-  const jsEntrypoints = await readdir(path.resolve(jsRoot, 'entrypoints'), {
+  const jsEntrypointsDir = path.resolve(jsRoot, 'entrypoints');
+  const jsEntrypoints = await readdir(jsEntrypointsDir, {
     withFileTypes: true,
   });
   const jsExtTest = /\.[jt]sx?$/;
   for (const file of jsEntrypoints) {
     if (file.isFile() && jsExtTest.test(file.name)) {
       entrypoints[file.name.replace(jsExtTest, '')] = path.resolve(
-        file.parentPath,
+        jsEntrypointsDir,
         file.name,
       );
     }
   }
 
   // Next, SCSS entrypoints
-  const scssEntrypoints = await readdir(
-    path.resolve(jsRoot, 'styles/entrypoints'),
-    { withFileTypes: true },
-  );
+  const scssEntrypointsDir = path.resolve(jsRoot, 'styles/entrypoints');
+  const scssEntrypoints = await readdir(scssEntrypointsDir, {
+    withFileTypes: true,
+  });
   const scssExtTest = /\.s?css$/;
   for (const file of scssEntrypoints) {
     if (file.isFile() && scssExtTest.test(file.name)) {
       entrypoints[file.name.replace(scssExtTest, '')] = path.resolve(
-        file.parentPath,
+        scssEntrypointsDir,
         file.name,
       );
     }
