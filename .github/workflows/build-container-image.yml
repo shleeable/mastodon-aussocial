@@ -23,6 +23,9 @@ on:
 # using Github's runners.
 # The two-step process is adapted form:
 # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
+permissions:
+  contents: read
+
 jobs:
   # Build each (amd64 and arm64) image separately
   build-image:
@@ -35,6 +38,11 @@ jobs:
           - linux/arm64
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@v4
 
       - name: Prepare
@@ -119,6 +127,11 @@ jobs:
       PUSH_TO_IMAGES: ${{ inputs.push_to_images }}
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@v4
 
       - name: Download digests
