@@ -12,7 +12,7 @@ const messages = defineMessages({
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
   unlisted_short: {
     id: 'privacy.unlisted.short',
-    defaultMessage: 'Quiet public',
+    defaultMessage: 'Public Unlisted',
   },
   private_short: {
     id: 'privacy.private.short',
