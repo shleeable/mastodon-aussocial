@@ -32,7 +32,7 @@ defaults: &defaults
   require_invite_text: false
   backups_retention_period: 7
   captcha_enabled: false
-  allow_referer_origin: true
+  allow_referrer_origin: true
 
 development:
   <<: *defaults
