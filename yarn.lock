@@ -12193,8 +12193,8 @@ __metadata:
   linkType: hard
 
 "sass@npm:^1.62.1, sass@npm:^1.70.0":
-  version: 1.96.0
-  resolution: "sass@npm:1.96.0"
+  version: 1.97.0
+  resolution: "sass@npm:1.97.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -12205,7 +12205,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/a932054bcee6935757417af6072d31b65ce3557798a53351b3e1369d7f06e24b0ec211e1617bdaaee998b429a44bf0f52acd240fd47f88422d5bc241eeb71672
+  checksum: 10c0/4c0e2596131054089beeeb6e98f7318beb909c4775187690656cbb85a45153d04eecd970e6a4431fe47dc94f9749cf8d58c9c5e59055d2cae39f4887a4bb6104
   languageName: node
   linkType: hard
 
@@ -14069,8 +14069,8 @@ __metadata:
   linkType: hard
 
 "vite-tsconfig-paths@npm:^6.0.0":
-  version: 6.0.2
-  resolution: "vite-tsconfig-paths@npm:6.0.2"
+  version: 6.0.3
+  resolution: "vite-tsconfig-paths@npm:6.0.3"
   dependencies:
     debug: "npm:^4.1.1"
     globrex: "npm:^0.1.2"
@@ -14080,7 +14080,7 @@ __metadata:
   peerDependenciesMeta:
     vite:
       optional: true
-  checksum: 10c0/878189e38a253b699998f94706b15718a03d59467b091e064f33090240f9ccfa4bf273c3b30b5f9711822c56a58b786c3e6c6cebb8859e56ec5ab49e360ff8c0
+  checksum: 10c0/75cfe470f1ec0e776b2aec1d2e71316d5e1214f485fce7daaed4e4789d6f667881fb85d98129b6463a5b70c7524ef258b401c4871ed8b6318ac45cc892ee778a
   languageName: node
   linkType: hard
 
