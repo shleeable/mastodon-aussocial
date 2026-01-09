@@ -17,6 +17,7 @@ module PrivateAddressCheck
   ].freeze
 
   CIDR_LIST = (IP4_CIDR_LIST + IP4_CIDR_LIST.map(&:ipv4_mapped) + [
+    IPAddr.new('::ffff:0:0/96'),   # IPv4-mapped IPv6 addresses
     IPAddr.new('64:ff9b::/96'),    # IPv4/IPv6 translation (RFC 6052)
     IPAddr.new('100::/64'),        # Discard prefix (RFC 6666)
     IPAddr.new('2001::/32'),       # Teredo tunneling
@@ -31,6 +32,7 @@ module PrivateAddressCheck
   module_function
 
   def private_address?(address)
+    address = address.native if address.ipv6?
     address.private? || address.loopback? || address.link_local? || CIDR_LIST.any? { |cidr| cidr.include?(address) }
   end
 end
