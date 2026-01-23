@@ -15,6 +15,8 @@ module DomainControlHelper
     else
       DomainBlock.blocked?(domain)
     end
+  rescue Addressable::URI::InvalidURIError, IDN::Idna::IdnaError
+    false
   end
 
   def limited_federation_mode?
