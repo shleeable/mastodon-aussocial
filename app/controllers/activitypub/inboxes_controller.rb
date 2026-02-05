@@ -28,7 +28,7 @@ class ActivityPub::InboxesController < ActivityPub::BaseController
   def unknown_affected_account?
     json = Oj.load(body, mode: :strict)
     json.is_a?(Hash) && %w(Delete Update).include?(json['type']) && json['actor'].present? && json['actor'] == value_or_id(json['object']) && !Account.exists?(uri: json['actor'])
-  rescue Oj::ParseError
+  rescue Oj::ParseError, TypeError
     false
   end
 
