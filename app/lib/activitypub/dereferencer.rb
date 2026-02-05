@@ -49,9 +49,9 @@ class ActivityPub::Dereferencer
     req.on_behalf_of(@signature_actor) if @signature_actor
 
     req.perform do |res|
-      if res.code == 200
+      if res.code == 200 && valid_activitypub_content_type?(res)
         json = body_to_json(res.body_with_limit)
-        json if json.present? && json['id'] == uri
+        json if json.is_a?(Hash) && json['id'] == uri
       else
         raise Mastodon::UnexpectedResponseError, res unless response_successful?(res) || response_error_unsalvageable?(res)
       end
