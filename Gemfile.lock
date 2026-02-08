@@ -90,14 +90,14 @@ GEM
       public_suffix (>= 2.0.2, < 8.0)
     aes_key_wrap (1.1.0)
     android_key_attestation (0.3.0)
-    annotaterb (4.20.0)
+    annotaterb (4.21.0)
       activerecord (>= 6.0.0)
       activesupport (>= 6.0.0)
     ast (2.4.3)
     attr_required (1.0.2)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1206.0)
-    aws-sdk-core (3.241.4)
+    aws-partitions (1.1212.0)
+    aws-sdk-core (3.242.0)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
@@ -108,7 +108,7 @@ GEM
     aws-sdk-kms (1.121.0)
       aws-sdk-core (~> 3, >= 3.241.4)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.212.0)
+    aws-sdk-s3 (1.213.0)
       aws-sdk-core (~> 3, >= 3.241.4)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -131,7 +131,7 @@ GEM
     blurhash (0.1.8)
     bootsnap (1.20.1)
       msgpack (~> 1.2)
-    brakeman (7.1.2)
+    brakeman (8.0.2)
       racc
     browser (6.2.0)
     builder (3.3.0)
@@ -187,16 +187,16 @@ GEM
       irb (~> 1.10)
       reline (>= 0.3.8)
     debug_inspector (1.2.0)
-    devise (4.9.4)
+    devise (5.0.0)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
-      railties (>= 4.1.0)
+      railties (>= 7.0)
       responders
       warden (~> 1.2.3)
-    devise-two-factor (6.3.1)
-      activesupport (>= 7.0, < 8.2)
-      devise (>= 4.0, < 5.0)
-      railties (>= 7.0, < 8.2)
+    devise-two-factor (6.4.0)
+      activesupport (>= 7.2, < 8.2)
+      devise (>= 4.0, < 6.0)
+      railties (>= 7.2, < 8.2)
       rotp (~> 6.0)
     devise_pam_authenticatable2 (9.2.0)
       devise (>= 4.0.0)
@@ -390,7 +390,7 @@ GEM
       activerecord
       kaminari-core (= 1.2.2)
     kaminari-core (1.2.2)
-    kt-paperclip (7.2.2)
+    kt-paperclip (7.3.0)
       activemodel (>= 4.2.0)
       activesupport (>= 4.2.0)
       marcel (~> 1.0.1)
@@ -446,7 +446,7 @@ GEM
     mime-types (3.7.0)
       logger
       mime-types-data (~> 3.2025, >= 3.2025.0507)
-    mime-types-data (3.2025.0924)
+    mime-types-data (3.2026.0127)
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
     minitest (6.0.1)
@@ -472,9 +472,8 @@ GEM
     nokogiri (1.19.0)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    oj (3.16.13)
+    oj (3.16.14)
       bigdecimal (>= 3.0)
-      ostruct (>= 0.2)
     omniauth (2.1.4)
       hashie (>= 3.4.6)
       logger
@@ -613,7 +612,7 @@ GEM
       net-smtp
       premailer (~> 1.7, >= 1.7.9)
     prettyprint (0.2.0)
-    prism (1.8.0)
+    prism (1.9.0)
     prometheus_exporter (2.3.1)
       webrick
     propshaft (1.3.1)
@@ -862,7 +861,7 @@ GEM
       unicode-display_width (>= 1.1.1, < 4)
     terrapin (1.1.1)
       climate_control
-    test-prof (1.5.1)
+    test-prof (1.5.2)
     thor (1.5.0)
     tilt (2.7.0)
     timeout (0.6.0)
@@ -950,7 +949,7 @@ DEPENDENCIES
   binding_of_caller (~> 1.0)
   blurhash (~> 0.1)
   bootsnap
-  brakeman (~> 7.0)
+  brakeman (~> 8.0)
   browser
   bundler-audit (~> 0.9)
   capybara (~> 3.39)
@@ -965,7 +964,7 @@ DEPENDENCIES
   csv (~> 3.2)
   database_cleaner-active_record
   debug (~> 1.8)
-  devise (~> 4.9)
+  devise
   devise-two-factor
   devise_pam_authenticatable2 (~> 9.2)
   discard (~> 1.2)

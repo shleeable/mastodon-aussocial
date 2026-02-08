@@ -1047,6 +1047,7 @@ body > [data-popper-placement] {
   font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-autospace: normal;
   font-size: 15px;
   line-height: 22px;
   padding-top: 2px;
@@ -1339,6 +1340,38 @@ body > [data-popper-placement] {
     &.unhandled-link {
       color: var(--color-text-brand);
     }
+  }
+}
+
+@each $lang in $vertical-lr-langs {
+  // writing-mode and width must be applied to a single element. When
+  // this element inherits a text direction that is opposite to its own,
+  // the start of this element's text is cut off.
+
+  .status:not(.status--is-quote)
+    > .status__content
+    > .status__content__text:lang(#{$lang}),
+  .conversation
+    > .conversation__content
+    > .status__content
+    > .status__content__text:lang(#{$lang}) {
+    writing-mode: vertical-lr;
+    width: 100%; // detecting overflow
+    max-width: calc(100% - mod(100%, 22px)); // avoid cut-offs
+    max-height: 209px; // roughly above 500 characters, readable
+    overflow-x: hidden; // read more
+  }
+
+  .autosuggest-textarea > .autosuggest-textarea__textarea:lang(#{$lang}) {
+    writing-mode: vertical-lr;
+    min-height: 209px; // writable
+  }
+
+  .detailed-status > .status__content > .status__content__text:lang(#{$lang}) {
+    writing-mode: vertical-lr;
+    width: 100%; // detecting overflow
+    max-height: 50vh;
+    overflow-x: auto;
   }
 }
 
@@ -8247,7 +8280,6 @@ noscript {
 }
 
 .account__header {
-  overflow: hidden;
   container: account-header / inline-size;
 
   &.inactive {
