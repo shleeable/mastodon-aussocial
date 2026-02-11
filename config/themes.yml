@@ -1,1 +1,8 @@
 default: styles/application.scss
+elephant: styles/elephant.scss
+elephant-light: styles/elephant-light.scss
+elephant-contrast: styles/elephant-contrast.scss
+tangerineui: styles/tangerineui.scss
+tangerineui-purple: styles/tangerineui-purple.scss
+tangerineui-cherry: styles/tangerineui-cherry.scss
+tangerineui-lagoon: styles/tangerineui-lagoon.scss
