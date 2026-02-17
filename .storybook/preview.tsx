@@ -21,10 +21,9 @@ import { reducerWithInitialState } from '@/mastodon/reducers';
 import { defaultMiddleware } from '@/mastodon/store/store';
 import { mockHandlers, unhandledRequestHandler } from '@/testing/api';
 
-// If you want to run the dark theme during development,
-// you can change the below to `/application.scss`
-import '../app/javascript/styles/mastodon-light.scss';
+import '../app/javascript/styles/application.scss';
 import './styles.css';
+import { modes } from './modes';
 
 const localeFiles = import.meta.glob('@/mastodon/locales/*.json', {
   query: { as: 'json' },
@@ -197,6 +196,13 @@ const preview: Preview = {
 
     msw: {
       handlers: mockHandlers,
+    },
+
+    chromatic: {
+      modes: {
+        dark: modes.darkTheme,
+        light: modes.lightTheme,
+      },
     },
   },
 };
