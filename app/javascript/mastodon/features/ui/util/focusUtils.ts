@@ -47,7 +47,7 @@ function focusColumnTitle(index: number, multiColumn: boolean) {
 
 /**
  * Move focus to the column of the passed index (1-based).
- * Focus is placed on the topmost visible item, or the column title
+ * Focus is placed on the topmost visible item, or the column title.
  */
 export function focusColumn(index = 1) {
   // Skip the leftmost drawer in multi-column mode
@@ -94,8 +94,16 @@ export function focusColumn(index = 1) {
     window.innerWidth || document.documentElement.clientWidth;
   const { item, rect } = itemToFocus;
 
+  const scrollParent = isMultiColumnLayout
+    ? container
+    : document.documentElement;
+  const columnHeaderHeight =
+    parseInt(
+      getComputedStyle(scrollParent).getPropertyValue('--column-header-height'),
+    ) || 0;
+
   if (
-    container.scrollTop > item.offsetTop ||
+    scrollParent.scrollTop > item.offsetTop - columnHeaderHeight ||
     rect.right > viewportWidth ||
     rect.left < 0
   ) {
@@ -141,11 +149,7 @@ export function focusFirstItem() {
 /**
  * Focus the item next to the one with the provided index
  */
-export function focusItemSibling(
-  index: number,
-  direction: 1 | -1,
-  scrollThreshold = 62,
-) {
+export function focusItemSibling(index: number, direction: 1 | -1) {
   const focusedElement = document.activeElement;
   const itemList = focusedElement?.closest('.item-list');
 
@@ -165,7 +169,9 @@ export function focusItemSibling(
   }
 
   // Check if the sibling is a post or a 'follow suggestions' widget
-  let targetElement = siblingItem.querySelector<HTMLElement>('.focusable');
+  let targetElement = siblingItem.matches('.focusable')
+    ? siblingItem
+    : siblingItem.querySelector<HTMLElement>('.focusable');
 
   // Otherwise, check if the item is a 'load more' button.
   if (!targetElement && siblingItem.matches('.load-more')) {
@@ -173,17 +179,9 @@ export function focusItemSibling(
   }
 
   if (targetElement) {
-    const elementRect = targetElement.getBoundingClientRect();
-
-    const isFullyVisible =
-      elementRect.top >= scrollThreshold &&
-      elementRect.bottom <= window.innerHeight;
-
-    if (!isFullyVisible) {
-      targetElement.scrollIntoView({
-        block: direction === 1 ? 'start' : 'center',
-      });
-    }
+    targetElement.scrollIntoView({
+      block: 'start',
+    });
 
     targetElement.focus();
   }
