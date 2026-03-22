@@ -778,6 +778,8 @@ it:
         administrator_description: Gli utenti con questo permesso saranno esentati da ogni permesso
         delete_user_data: Cancella dati utente
         delete_user_data_description: Consente agli utenti di eliminare subito i dati degli altri utenti
+        invite_bypass_approval: Invita utenti senza revisione
+        invite_bypass_approval_description: Permette alle persone invitate al server da questi utenti, di aggirare l'approvazione della moderazione
         invite_users: Invita Utenti
         invite_users_description: Consente agli utenti di invitare nuove persone su questo server
         manage_announcements: Gestisci Annunci
@@ -1279,6 +1281,7 @@ it:
     progress:
       confirm: Conferma l'e-mail
       details: I tuoi dettagli
+      list: Stato della registrazione
       review: La nostra revisione
       rules: Accetta le regole
     providers:
@@ -1294,6 +1297,7 @@ it:
       invited_by: 'Puoi unirti a %{domain} grazie all''invito che hai ricevuto da:'
       preamble: Questi sono impostati e applicati dai moderatori di %{domain}.
       preamble_invited: Prima di procedere, si prega di considerare le regole di base stabilite dai moderatori di %{domain}.
+      read_more: Scopri di più
       title: Alcune regole di base.
       title_invited: Sei stato/a invitato/a.
     security: Credenziali
