@@ -80,7 +80,7 @@ class ActivityPub::SynchronizeFollowersService < BaseService
       return true if collection['next'].blank? # We reached the end of the collection
       return false if max_pages <= 0 # We reached our pages limit
 
-      collection = fetch_collection_page(collection['next'])
+      collection = fetch_collection_page(collection['next'], reference_uri: @account.uri)
     end
 
     false
