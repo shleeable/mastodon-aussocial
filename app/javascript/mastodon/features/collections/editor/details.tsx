@@ -36,7 +36,7 @@ import {
 import { useAppDispatch, useAppSelector } from 'mastodon/store';
 
 import classes from './styles.module.scss';
-import { WizardStepHeader } from './wizard_step_header';
+import { WizardStepTitle } from './wizard_step_title';
 
 export const CollectionDetails: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -152,7 +152,7 @@ export const CollectionDetails: React.FC = () => {
     <form onSubmit={handleSubmit} className={classes.form}>
       <FormStack className={classes.formFieldStack}>
         {!id && (
-          <WizardStepHeader
+          <WizardStepTitle
             step={2}
             title={
               <FormattedMessage
@@ -276,18 +276,16 @@ export const CollectionDetails: React.FC = () => {
       </FormStack>
 
       <div className={classes.stickyFooter}>
-        <div className={classes.actionWrapper}>
-          <Button type='submit'>
-            {id ? (
-              <FormattedMessage id='lists.save' defaultMessage='Save' />
-            ) : (
-              <FormattedMessage
-                id='collections.create_collection'
-                defaultMessage='Create collection'
-              />
-            )}
-          </Button>
-        </div>
+        <Button type='submit'>
+          {id ? (
+            <FormattedMessage id='lists.save' defaultMessage='Save' />
+          ) : (
+            <FormattedMessage
+              id='collections.create_collection'
+              defaultMessage='Create collection'
+            />
+          )}
+        </Button>
       </div>
     </form>
   );
