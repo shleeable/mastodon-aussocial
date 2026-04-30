@@ -14,7 +14,8 @@ of companies that %{domain} does not own or control, or to individuals that
   upload a profile picture and header image. The username, display name,
   biography, profile picture and header image are always listed publicly.
 - **Posts, following and other public information**: The list of people you
-  follow is listed publicly, the same is true for your followers. When you
+  follow and your followers can be listed publicly, depending on your privacy
+  settings. When you
   submit a message, the date and time is stored as well as the application you
   submitted the message from. Messages may contain media attachments, such as
   pictures and videos. Public and unlisted posts are available publicly. When
