@@ -39,7 +39,7 @@ export const AccountTimelineProvider: FC<{
 
   const [replies, setReplies] = useStorageState<boolean>(
     'replies',
-    true,
+    false,
     storageOptions,
   );
 
