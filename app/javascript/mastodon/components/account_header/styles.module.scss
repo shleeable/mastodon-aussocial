@@ -78,6 +78,8 @@
 
 .nameWrapper {
   flex-grow: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .name {
@@ -263,9 +265,27 @@ $button-fallback-breakpoint: $button-breakpoint + 55px;
   }
 }
 
+.numberFields {
+  @container (width >= #{$button-breakpoint}) {
+    --number-fields-gap: 40px;
+  }
+}
+
 .bio {
   font-size: 15px;
   color: var(--color-text-primary);
+  unicode-bidi: plaintext;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  :any-link {
+    color: var(--color-text-status-links);
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
 .familiarFollowers {
