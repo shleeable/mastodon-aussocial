@@ -40,10 +40,11 @@ export function getNestedProperty(
     if (currentKey !== undefined && currentKey in currentObject) {
       const nextObject = currentObject[currentKey];
       if (isRecordObject(nextObject)) {
+        if (remainingKeys.length === 0) {
+          return nextObject;
+        }
         currentObject = nextObject;
         continue;
-      } else if (remainingKeys.length === 0) {
-        return nextObject;
       }
     }
   }
