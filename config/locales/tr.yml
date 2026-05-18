@@ -345,12 +345,19 @@ tr:
       updated_msg: Duyuru başarıyla güncellendi!
     collections:
       accounts: Hesaplar
+      back_to_account: Hesap sayfasına geri dön
+      back_to_report: Bildirim sayfasına geri dön
+      batch:
+        add_to_report: "#%{id} raporuna ekle"
+        report: Bildirim
       collection_title: "%{name} koleksiyonu"
       contents: İçerikler
+      no_collection_selected: Hiçbiri seçilmediği için hiçbir koleksiyon değiştirilmedi
       number_of_accounts:
         one: 1 hesap
         other: "%{count} hesap"
       open: Aç
+      title: Hesap koleksiyonları - @%{name}
       view_publicly: Herkese açık görüntüle
     critical_update_pending: Kritik güncelleme bekliyor
     custom_emojis:
@@ -2178,7 +2185,7 @@ tr:
     webauthn: Güvenlik anahtarları
   unsubscriptions:
     create:
-      action: Sunucu anasayfasına git
+      action: Sunucu ana sayfasına git
       email_subscription:
         confirmation_html: "%{name} kişisinden artık e-posta almayacaksınız."
       title: Abonelikten ayrıldınız
@@ -2294,7 +2301,7 @@ tr:
       feature_moderation_title: Olması gerektiği gibi moderasyon
       follow_action: Takip et
       follow_step: Kendi akışınızı düzenliyorsunuz. Hadi onu ilginç kullanıcılarla dolduralım.
-      follow_title: Anasayfa akışınızı kişiselleştirin
+      follow_title: Ana sayfa akışınızı kişiselleştirin
       follows_subtitle: Tanınmış hesapları takip edin
       follows_title: Takip edebileceklerin
       follows_view_more: Takip edecek daha fazla kişi görüntüleyin
