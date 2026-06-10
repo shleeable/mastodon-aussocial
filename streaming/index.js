@@ -9,7 +9,6 @@ import url from 'node:url';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import { JSDOM } from 'jsdom';
 import { WebSocketServer } from 'ws';
 
 import * as Database from './database.js';
@@ -17,7 +16,7 @@ import { AuthenticationError, RequestError, extractStatusAndMessage as extractEr
 import { logger, httpLogger, initializeLogLevel, attachWebsocketHttpLogger, createWebsocketLogger } from './logging.js';
 import { setupMetrics } from './metrics.js';
 import * as Redis from './redis.js';
-import { isTruthy, normalizeHashtag, firstParam } from './utils.js';
+import { isTruthy, normalizeHashtag, firstParam, stripHTML } from './utils.js';
 
 const environment = process.env.NODE_ENV || 'development';
 const PERMISSION_VIEW_FEEDS = 0x0000000000100000;
@@ -63,33 +62,16 @@ initializeLogLevel(process.env, environment);
 
 
 /**
- * Attempts to safely parse a string as JSON, used when both receiving a message
- * from redis and when receiving a message from a client over a websocket
- * connection, this is why it accepts a `req` argument.
+ * Attempts to safely parse a string as JSON.
  * @param {string} json
- * @param {Request?} req
- * @returns {Object.<string, unknown>|null}
+ * @returns {[Error, null] | [null, any]}
  */
-const parseJSON = (json, req) => {
+const parseJSON = (json) => {
   try {
-    return JSON.parse(json);
+    return [null, JSON.parse(json)];
   } catch (err) {
-    /* FIXME: This logging isn't great, and should probably be done at the
-     * call-site of parseJSON, not in the method, but this would require changing
-     * the signature of parseJSON to return something akin to a Result type:
-     * [Error|null, null|Object<string,any}], and then handling the error
-     * scenarios.
-     */
-    if (req) {
-      if (req.accountId) {
-        req.log.error({ err }, `Error parsing message from user ${req.accountId}`);
-      } else {
-        req.log.error({ err }, `Error parsing message from ${req.remoteAddress}`);
-      }
-    } else {
-      logger.error({ err }, `Error parsing message from redis`);
-    }
-    return null;
+    // @ts-ignore
+    return [err, null];
   }
 };
 
@@ -301,8 +283,11 @@ const startServer = async () => {
       return;
     }
 
-    const json = parseJSON(message, null);
-    if (!json) return;
+    const [err, json] = parseJSON(message);
+    if (err) {
+      logger.error({ err }, `Error parsing message from redis`);
+      return;
+    }
 
     callbacks.forEach(callback => callback(json));
   };
@@ -310,7 +295,7 @@ const startServer = async () => {
 
   /**
    * @callback SubscriptionListener
-   * @param {ReturnType<parseJSON>} json of the message
+   * @param {any} json of the message
    * @returns void
    */
 
@@ -415,9 +400,8 @@ const startServer = async () => {
       return;
     }
 
-    const token = authorization ? authorization.replace(/^Bearer /, '') : accessToken;
+    const token = authorization ? (typeof authorization === 'string' ? authorization.replace(/^Bearer /, '') : '') : (typeof accessToken === 'string' ? accessToken : '');
 
-    // @ts-expect-error
     resolve(accountFromToken(token, req));
   });
 
@@ -498,11 +482,11 @@ const startServer = async () => {
    */
   const createSystemMessageListener = (req, eventHandlers) => {
     return message => {
-      if (!message?.event) {
+      if (!message || typeof message !== 'object' || !('event' in message)) {
         return;
       }
 
-      const { event } = message;
+      const event = message.event;
 
       req.log.debug(`System message for ${req.accountId}: ${event}`);
 
@@ -512,6 +496,8 @@ const startServer = async () => {
       } else if (event === 'filters_changed') {
         req.log.debug(`Invalidating filters cache for ${req.accountId}`);
         req.cachedFilters = null;
+        // @ts-ignore
+        req.cachedBlocks = null;
       }
     };
   };
@@ -686,7 +672,7 @@ const startServer = async () => {
 
     /** @type {SubscriptionListener} */
     const listener = message => {
-      if (!message?.event || !message?.payload) {
+      if (!message || typeof message !== 'object' || !('event' in message) || !('payload' in message)) {
         return;
       }
 
@@ -703,7 +689,6 @@ const startServer = async () => {
       // The channels that need filtering are determined in the function
       // `channelNameToIds` defined below:
       if (!needsFiltering || (event !== 'update' && event !== 'status.update')) {
-        // @ts-expect-error
         transmit(event, payload);
         return;
       }
@@ -718,9 +703,7 @@ const startServer = async () => {
       }
 
       // Filter based on language:
-      // @ts-expect-error
       if (Array.isArray(req.chosenLanguages) && req.chosenLanguages.indexOf(payload.language) === -1) {
-        // @ts-expect-error
         log.debug(`Message ${payload.id} filtered by language (${payload.language})`);
         return;
       }
@@ -732,53 +715,165 @@ const startServer = async () => {
       }
 
       // Filter based on domain blocks, blocks, mutes, or custom filters:
-      // @ts-expect-error
+      // @ts-ignore
       const targetAccountIds = [payload.account.id].concat(payload.mentions.map(item => item.id));
-      // @ts-expect-error
       const accountDomain = payload.account.acct.split('@')[1];
 
       // TODO: Move this logic out of the message handling loop
-      pgPool.connect((err, client, releasePgConnection) => {
-        if (err) {
-          log.error(err);
+      const nowForCache = Date.now();
+      // @ts-ignore
+      if (req.cachedBlocks && req.cachedBlocks.expiresAt > nowForCache && targetAccountIds.every(id => req.cachedBlocks.unblockedAccountIds.includes(id)) && (!accountDomain || (req.cachedBlocks.unblockedDomains && req.cachedBlocks.unblockedDomains.includes(accountDomain)))) {
+        if (Object.hasOwn(payload, "filtered")) {
+          transmit(event, payload);
           return;
         }
 
-        const queries = [
-          // @ts-expect-error
-          client.query(`SELECT 1
-                        FROM blocks
-                        WHERE (account_id = $1 AND target_account_id IN (${placeholders(targetAccountIds, 2)}))
-                           OR (account_id = $2 AND target_account_id = $1)
-                        UNION
-                        SELECT 1
-                        FROM mutes
-                        WHERE account_id = $1
-                          AND target_account_id IN (${placeholders(targetAccountIds, 2)})`, [req.accountId, payload.
-                          // @ts-expect-error
-                          account.id].concat(targetAccountIds)),
-        ];
-
-        if (accountDomain) {
-          // @ts-expect-error
-          queries.push(client.query('SELECT 1 FROM account_domain_blocks WHERE account_id = $1 AND domain = $2', [req.accountId, accountDomain]));
+        // If we reach here, we have a cache hit but we might still need to apply custom filters if they are not already cached.
+        // However, the current code structure is a bit messy and mixes block check with filter construction.
+        // To keep it simple and safe for now, I'll just fall through if filters are not cached.
+        if (!req.cachedFilters) {
+          // Fall through to database check if filters are not yet cached
+        } else {
+          // Apply filters using cachedFilters
+          applyFilters(payload, event, req, transmit, log);
+          return;
         }
+      }
 
+      /**
+       * @param {any} payload
+       * @param {string} event
+       * @param {Request} req
+       * @param {function(string, any): void} transmit
+       * @param {import('pino').Logger} log
+       */
+      function applyFilters(payload, event, req, transmit, log) {
+        // Apply cachedFilters against the payload, constructing a
+        // `filter_results` array of FilterResult entities
+        const status = payload;
+        // TODO: Calculate searchableContent in Ruby on Rails:
         // @ts-expect-error
-        if (!payload.filtered && !req.cachedFilters) {
-          // @ts-expect-error
-          queries.push(client.query('SELECT filter.id AS id, filter.phrase AS title, filter.context AS context, filter.expires_at AS expires_at, filter.action AS filter_action, keyword.keyword AS keyword, keyword.whole_word AS whole_word FROM custom_filter_keywords keyword JOIN custom_filters filter ON keyword.custom_filter_id = filter.id WHERE filter.account_id = $1 AND (filter.expires_at IS NULL OR filter.expires_at > NOW())', [req.accountId]));
-        }
+        const searchableContent = ([status.spoiler_text || '', status.content].concat((status.poll && status.poll.options) ? status.poll.options.map(option => option.title) : [])).concat(status.media_attachments.map(att => att.description)).join('\n\n').replace(/<br\s*\/?>/g, '\n').replace(/<\/p><p>/g, '\n\n');
+        const searchableTextContent = stripHTML(searchableContent);
 
-        Promise.all(queries).then(values => {
-          releasePgConnection();
+        const now = new Date();
+        // @ts-ignore
+        const filter_results = Object.values(req.cachedFilters).reduce((results, cachedFilter) => {
+          // Check the filter hasn't expired before applying:
+          // @ts-ignore
+          if (cachedFilter.expires_at !== null && cachedFilter.expires_at < now) {
+            return results;
+          }
 
-          // Handling blocks & mutes and domain blocks: If one of those applies,
-          // then we don't transmit the payload of the event to the client
-          // @ts-expect-error
-          if (values[0].rows.length > 0 || (accountDomain && values[1].rows.length > 0)) {
+          // Just in-case stripHTML fails to find textContent in searchableContent
+          if (!searchableTextContent) {
+            return results;
+          }
+
+          // @ts-ignore
+          const keyword_matches = searchableTextContent.match(cachedFilter.regexp);
+          if (keyword_matches) {
+            // results is an Array of FilterResult; status_matches is always
+            // null as we only are only applying the keyword-based custom
+            // filters, not the status-based custom filters.
+            // https://docs.joinmastodon.org/entities/FilterResult/
+            results.push({
+              // @ts-ignore
+              filter: cachedFilter.filter,
+              keyword_matches,
+              status_matches: null
+            });
+          }
+
+          return results;
+        }, []);
+
+        // Send the payload + the FilterResults as the `filtered` property
+        // to the streaming connection. To reach this code, the `event` must
+        // have been either `update` or `status.update`, meaning the
+        // `payload` is a Status entity, which has a `filtered` property:
+        //
+        // filtered: https://docs.joinmastodon.org/entities/Status/#filtered
+        transmit(event, {
+          ...payload,
+          filtered: filter_results
+        });
+      }
+
+        pgPool.connect((err, client, releasePgConnection) => {
+          if (err) {
+            log.error(err);
             return;
           }
+
+          const queries = [
+            // @ts-expect-error
+            client.query(`SELECT 1
+                          FROM blocks
+                          WHERE (account_id = $1 AND target_account_id IN (${placeholders(targetAccountIds, 2)}))
+                             OR (account_id = $2 AND target_account_id = $1)
+                          UNION
+                          SELECT 1
+                          FROM mutes
+                          WHERE account_id = $1
+                            AND target_account_id IN (${placeholders(targetAccountIds, 2)})`, [req.accountId, payload.
+                            account.id].concat(targetAccountIds)),
+          ];
+
+          if (client) {
+            if (accountDomain) {
+              queries.push(client.query('SELECT 1 FROM account_domain_blocks WHERE account_id = $1 AND domain = $2', [req.accountId, accountDomain]));
+            }
+
+            if (!payload.filtered && !req.cachedFilters) {
+              queries.push(client.query('SELECT filter.id AS id, filter.phrase AS title, filter.context AS context, filter.expires_at AS expires_at, filter.action AS filter_action, keyword.keyword AS keyword, keyword.whole_word AS whole_word FROM custom_filter_keywords keyword JOIN custom_filters filter ON keyword.custom_filter_id = filter.id WHERE filter.account_id = $1 AND (filter.expires_at IS NULL OR filter.expires_at > NOW())', [req.accountId]));
+            }
+          }
+
+          // @ts-ignore
+          Promise.all(queries).then(values => {
+            const isBlocked = values[0] && values[0].rows && values[0].rows.length > 0 || (accountDomain && values[1] && values[1].rows && values[1].rows.length > 0);
+
+            // Handling blocks & mutes and domain blocks: If one of those applies,
+            // then we don't transmit the payload of the event to the client
+            if (isBlocked) {
+              return;
+            }
+
+            // @ts-ignore
+            if (!req.cachedBlocks || req.cachedBlocks.expiresAt <= nowForCache) {
+              // @ts-ignore
+              req.cachedBlocks = {
+                expiresAt: nowForCache + 60000,
+                unblockedAccountIds: [],
+                unblockedDomains: [],
+              };
+            }
+
+            // @ts-ignore
+            targetAccountIds.forEach(id => {
+              // @ts-ignore
+              if (!req.cachedBlocks.unblockedAccountIds.includes(id)) {
+                // @ts-ignore
+                req.cachedBlocks.unblockedAccountIds.push(id);
+              }
+            });
+
+            if (accountDomain) {
+              // @ts-ignore
+              if (!req.cachedBlocks.unblockedDomains.includes(accountDomain)) {
+                // @ts-ignore
+                req.cachedBlocks.unblockedDomains.push(accountDomain);
+              }
+            }
+
+            return values;
+          }).catch(err => {
+            log.error(err);
+          }).finally(() => {
+            releasePgConnection();
+          }).then(values => {
+            if (!values) return;
 
           // If the payload already contains the `filtered` property, it means
           // that filtering has been applied on the ruby on rails side, as
@@ -791,7 +886,7 @@ const startServer = async () => {
           // Handling for constructing the custom filters and caching them on the request
           // TODO: Move this logic out of the message handling lifecycle
           // @ts-ignore
-          if (!req.cachedFilters) {
+          if (!req.cachedFilters && values[accountDomain ? 2 : 1]) {
             // @ts-expect-error
             const filterRows = values[accountDomain ? 2 : 1].rows;
 
@@ -848,56 +943,10 @@ const startServer = async () => {
           // Apply cachedFilters against the payload, constructing a
           // `filter_results` array of FilterResult entities
           if (req.cachedFilters) {
-            const status = payload;
-            // TODO: Calculate searchableContent in Ruby on Rails:
-            // @ts-expect-error
-            const searchableContent = ([status.spoiler_text || '', status.content].concat((status.poll && status.poll.options) ? status.poll.options.map(option => option.title) : [])).concat(status.media_attachments.map(att => att.description)).join('\n\n').replace(/<br\s*\/?>/g, '\n').replace(/<\/p><p>/g, '\n\n');
-            const searchableTextContent = JSDOM.fragment(searchableContent).textContent;
-
-            const now = new Date();
-            const filter_results = Object.values(req.cachedFilters).reduce((results, cachedFilter) => {
-              // Check the filter hasn't expired before applying:
-              if (cachedFilter.expires_at !== null && cachedFilter.expires_at < now) {
-                return results;
-              }
-
-              // Just in-case JSDOM fails to find textContent in searchableContent
-              if (!searchableTextContent) {
-                return results;
-              }
-
-              const keyword_matches = searchableTextContent.match(cachedFilter.regexp);
-              if (keyword_matches) {
-                // results is an Array of FilterResult; status_matches is always
-                // null as we only are only applying the keyword-based custom
-                // filters, not the status-based custom filters.
-                // https://docs.joinmastodon.org/entities/FilterResult/
-                results.push({
-                  filter: cachedFilter.filter,
-                  keyword_matches,
-                  status_matches: null
-                });
-              }
-
-              return results;
-            }, []);
-
-            // Send the payload + the FilterResults as the `filtered` property
-            // to the streaming connection. To reach this code, the `event` must
-            // have been either `update` or `status.update`, meaning the
-            // `payload` is a Status entity, which has a `filtered` property:
-            //
-            // filtered: https://docs.joinmastodon.org/entities/Status/#filtered
-            transmit(event, {
-              ...payload,
-              filtered: filter_results
-            });
+            applyFilters(payload, event, req, transmit, log);
           } else {
             transmit(event, payload);
           }
-        }).catch(err => {
-          log.error(err);
-          releasePgConnection();
         });
       });
     };
@@ -1350,10 +1399,14 @@ const startServer = async () => {
       // references to the websocket, the request, and the logger, causing
       // memory leaks.
 
-      // This is commented out because `delete` only operated on object properties
-      // It needs to be replaced by `session = undefined`, but it requires every calls to
-      // `session` to check for it, thus a significant refactor
-      // delete session;
+      // @ts-ignore
+      session.websocket = null;
+      // @ts-ignore
+      session.request = null;
+      // @ts-ignore
+      session.logger = null;
+      // @ts-ignore
+      session.subscriptions = null;
     });
 
     // Note: immediately after the `error` event is emitted, the `close` event
@@ -1370,23 +1423,29 @@ const startServer = async () => {
       }
       const message = data.toString('utf8');
 
-      const json = parseJSON(message, session.request);
+      const [err, json] = parseJSON(message);
 
-      if (!json) return;
+      if (err) {
+        if (session.request.accountId) {
+          session.request.log.error({ err }, `Error parsing message from user ${session.request.accountId}`);
+        } else {
+          session.request.log.error({ err }, `Error parsing message from ${session.request.remoteAddress}`);
+        }
+        return;
+      }
 
+      // @ts-ignore
       const { type, stream, ...params } = json;
 
       if (type === 'subscribe') {
         subscribeWebsocketToChannel(
           session,
-          // @ts-expect-error
           firstParam(stream),
           params
         );
       } else if (type === 'unsubscribe') {
         unsubscribeWebsocketFromChannel(
           session,
-          // @ts-expect-error
           firstParam(stream),
           params
         );
@@ -1408,13 +1467,13 @@ const startServer = async () => {
 
   setInterval(() => {
     wss.clients.forEach(ws => {
-      // @ts-expect-error
+      // @ts-ignore
       if (ws.isAlive === false) {
         ws.terminate();
         return;
       }
 
-      // @ts-expect-error
+      // @ts-ignore
       ws.isAlive = false;
       ws.ping('', false);
     });

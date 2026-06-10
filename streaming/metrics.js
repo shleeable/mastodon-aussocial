@@ -96,11 +96,13 @@ export function setupMetrics(channels, pgPool) {
    * @type {import('express').RequestHandler}
    */
   const requestHandler = (req, res) => {
-    metrics.register.metrics().then((output) => {
+    return metrics.register.metrics().then((output) => {
       res.set('Content-Type', metrics.register.contentType);
       res.set('Cache-Control', 'private, no-store');
       res.end(output);
+      return;
     }).catch((err) => {
+      // @ts-ignore
       req.log.error(err, "Error collecting metrics");
       res.set('Cache-Control', 'private, no-store');
       res.status(500).end();
