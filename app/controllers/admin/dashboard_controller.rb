@@ -2,8 +2,6 @@
 
 module Admin
   class DashboardController < BaseController
-    include Redisable
-
     def index
       authorize :dashboard, :index?
 
