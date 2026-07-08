@@ -34,7 +34,7 @@ export const LearnMoreLink: React.FC<{ children: React.ReactNode }> = ({
       <Popover
         isOpen={open}
         onClose={handleClick}
-        offset={5}
+        offset={{ mainAxis: 5, crossAxis: 5 }}
         placement='bottom-end'
         reference={trigger}
       >
