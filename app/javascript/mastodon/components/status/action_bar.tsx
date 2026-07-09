@@ -140,6 +140,7 @@ const messages = defineMessages({
 export const StatusActionBar: React.FC<StatusActionBarProps> = ({
   statusId,
   contextType,
+  withDismiss,
   withCounters,
   scrollKey,
 }) => {
@@ -234,6 +235,7 @@ export const StatusActionBar: React.FC<StatusActionBarProps> = ({
             status={status}
             contextType={contextType}
             scrollKey={scrollKey}
+            withDismiss={withDismiss}
           />
         )}
       </RemoveQuoteHint>
