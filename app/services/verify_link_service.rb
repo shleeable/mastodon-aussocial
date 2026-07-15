@@ -33,7 +33,7 @@ class VerifyLinkService < BaseService
     elsif links.empty?
       false
     else
-      link_redirects_back?(links.first['href'])
+      links.take(10).any? { |link| link_redirects_back?(link['href']) }
     end
   end
 
