@@ -228,7 +228,11 @@ export const insertStatusIntoAccountTimelines = createAppThunk(
       if (parsed?.type !== 'account' || parsed.pinned) {
         return false;
       }
-
+  
+      if (!parsed.replies && status.in_reply_to_id !== undefined) {
+        return false;
+      }
+  
       return !parsed.tagged || tags.includes(parsed.tagged);
     });
 
