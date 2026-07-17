@@ -90,6 +90,13 @@ module Paperclip
         tracked_errors: [Seahorse::Client::NetworkingError]
       ).run { super }
     end
+
+    def flush_writes
+      super
+    ensure
+      unlink_files(@queued_for_write.values)
+      @queued_for_write = {}
+    end
   end
 end
 
