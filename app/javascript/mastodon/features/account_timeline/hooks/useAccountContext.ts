@@ -45,7 +45,7 @@ export const useAccountContextValue = (accountId?: string | null) => {
 
   const [replies, setReplies] = useStorageState<boolean>(
     'replies',
-    false,
+    true,
     storageOptions,
   );
 
