@@ -80,3 +80,5 @@
       every: ['24h', first_in: '1s']
       class: Scheduler::RepairRemoteCollectionsScheduler
       queue: scheduler
+
+:dead_max_jobs: 1_000_000
