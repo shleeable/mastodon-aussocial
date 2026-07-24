@@ -115,7 +115,21 @@ if ENV['S3_ENABLED'] == 'true'
           if ENV.key?('S3_MULTIPART_THREAD_COUNT')
             @s3_headers[:thread_count] = ENV['S3_MULTIPART_THREAD_COUNT'].to_i
           end
-          super
+
+          retries = 0
+          begin
+            super
+          rescue Aws::S3::MultipartUploadError, Seahorse::Client::NetworkingError => e
+            retries += 1
+            if retries <= 3
+              warn("S3 upload failed with #{e.class}: #{e.message}. Retrying locally (attempt #{retries}/3)...")
+              @queued_for_write.each_value { |file| file.rewind if file.respond_to?(:rewind) }
+              sleep(retries * 2)
+              retry
+            else
+              raise e
+            end
+          end
         ensure
           @s3_headers.delete(:thread_count)
         end
