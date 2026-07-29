@@ -34,6 +34,7 @@ class Collection < ApplicationRecord
   has_many :collection_reports, dependent: :delete_all
   has_many :accounts, -> { merge(CollectionItem.pending_or_accepted) }, through: :collection_items
   has_many :notifications, as: :activity, dependent: :destroy
+  has_many :tagged_objects, as: :object, dependent: :nullify
 
   validates :name, presence: true
   validates :name, length: { maximum: 40 }, if: :local?
