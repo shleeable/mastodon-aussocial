@@ -65,10 +65,10 @@ if ENV['S3_ENABLED'] == 'true'
 
     s3_options: {
       signature_version: ENV.fetch('S3_SIGNATURE_VERSION') { 'v4' },
-      http_open_timeout: ENV.fetch('S3_OPEN_TIMEOUT') { '5' }.to_i,
-      http_read_timeout: ENV.fetch('S3_READ_TIMEOUT') { '5' }.to_i,
+      http_open_timeout: ENV.fetch('S3_OPEN_TIMEOUT') { '15' }.to_i,
+      http_read_timeout: ENV.fetch('S3_READ_TIMEOUT') { '60' }.to_i,
       http_idle_timeout: 5,
-      retry_limit: ENV.fetch('S3_RETRY_LIMIT') { '0' }.to_i,
+      retry_limit: ENV.fetch('S3_RETRY_LIMIT') { '3' }.to_i,
     }
   )
 
@@ -109,6 +109,29 @@ if ENV['S3_ENABLED'] == 'true'
         rescue Aws::Errors::ServiceError => e
           warn("#{e} - cannot copy #{path(style)} to local file #{local_dest_path}")
           false
+        end
+
+        def flush_writes
+          if ENV.key?('S3_MULTIPART_THREAD_COUNT')
+            @s3_headers[:thread_count] = ENV['S3_MULTIPART_THREAD_COUNT'].to_i
+          end
+
+          retries = 0
+          begin
+            super
+          rescue Aws::S3::MultipartUploadError, Seahorse::Client::NetworkingError => e
+            retries += 1
+            if retries <= 3
+              warn("S3 upload failed with #{e.class}: #{e.message}. Retrying locally (attempt #{retries}/3)...")
+              @queued_for_write.each_value { |file| file.rewind if file.respond_to?(:rewind) }
+              sleep(retries * 2)
+              retry
+            else
+              raise e
+            end
+          end
+        ensure
+          @s3_headers.delete(:thread_count)
         end
       end
     end
