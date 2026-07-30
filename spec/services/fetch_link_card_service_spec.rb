@@ -94,6 +94,21 @@ RSpec.describe FetchLinkCardService do
       end
     end
 
+    context 'when oEmbed endpoint cache is populated with a different domain' do
+      let(:status) { Fabricate(:status, text: 'http://example.com/redirect') }
+
+      before do
+        Rails.cache.write('oembed_endpoint:example.com', { endpoint: 'http://another.example.com/oembed?url={url}', format: :json })
+        stub_request(:get, 'http://another.example.com/oembed?url=http://example.com/redirect').to_return(status: 400)
+        stub_request(:get, 'http://another.example.com/oembed?url=http://example.com/html').to_return(headers: { 'Content-Type' => 'application/json' }, body: '{ "version": "1.0", "type": "link", "title": "oEmbed title" }')
+      end
+
+      it 'follows redirects and fetches the card successfully' do
+        expect(status.preview_card).to_not be_nil
+        expect(status.preview_card.title).to eq 'oEmbed title'
+      end
+    end
+
     context 'with a broken redirect URL' do
       let(:status) { Fabricate(:status, text: 'http://example.com/redirect-to-404') }
 

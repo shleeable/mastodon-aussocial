@@ -110,8 +110,16 @@ class FetchLinkCardService < BaseService
     url_domain      = Addressable::URI.parse(@url).normalized_host
     cached_endpoint = Rails.cache.read("oembed_endpoint:#{url_domain}")
 
-    embed   = service.call(@url, cached_endpoint: cached_endpoint) unless cached_endpoint.nil?
-    embed ||= service.call(@url, html: html) unless html.nil?
+    # If the cached endpoint's host is different from the current URL domain,
+    # it means the URL is a redirected link (like a shortener).
+    # In that case, or when no endpoint is cached, we must fetch the HTML first
+    # to follow redirects and update `@url` before fetching oEmbed.
+    if cached_endpoint.nil? || (Addressable::URI.parse(cached_endpoint[:endpoint]).normalized_host rescue nil) != url_domain
+      html_content = html
+      embed = service.call(@url, html: html_content) unless html_content.nil?
+    else
+      embed = service.call(@url, cached_endpoint: cached_endpoint)
+    end
 
     return false if embed.nil?
 
