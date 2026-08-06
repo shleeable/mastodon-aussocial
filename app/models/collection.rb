@@ -22,7 +22,7 @@
 #  tag_id                   :bigint(8)
 #
 class Collection < ApplicationRecord
-  MAX_ITEMS = 25
+  MAX_ITEMS = 150
   NAME_LENGTH_HARD_LIMIT = 256
   DESCRIPTION_LENGTH_HARD_LIMIT = 2048
 
