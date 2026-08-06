@@ -43,7 +43,7 @@ import { canAccountBeAdded, canAccountBeAddedByFollowers } from '../utils';
 import classes from './styles.module.scss';
 import { WizardStepTitle } from './wizard_step_title';
 
-export const MAX_COLLECTION_ACCOUNT_COUNT = 25;
+export const MAX_COLLECTION_ACCOUNT_COUNT = 150;
 
 const AddedAccountItem: React.FC<{
   accountId: string;
