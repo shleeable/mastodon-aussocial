@@ -1,0 +1,441 @@
+diff --git a/app/javascript/mastodon/actions/compose.js b/app/javascript/mastodon/actions/compose.js
+index d6d2fa0ac3..f03a450f4a 100644
+--- a/app/javascript/mastodon/actions/compose.js
++++ b/app/javascript/mastodon/actions/compose.js
+@@ -327,10 +327,10 @@ export function submitComposeFail(error) {
+ export function uploadCompose(files) {
+   return function (dispatch, getState) {
+     // Exit if there's a quote.
+-    if (getState().compose.get('quoted_status_id')) {
+-      dispatch(showAlert({ message: messages.uploadQuote }));
+-      return;
+-    }
++    // if (getState().compose.get('quoted_status_id')) {
++    //   dispatch(showAlert({ message: messages.uploadQuote }));
++    //   return;
++    // }
+     const uploadLimit = getState().getIn(['server', 'server', 'item', 'configuration', 'statuses', 'max_media_attachments']);
+     const media = getState().getIn(['compose', 'media_attachments']);
+     const pending = getState().getIn(['compose', 'pending_media_attachments']);
+diff --git a/app/javascript/mastodon/features/account_timeline/hooks/useAccountContext.ts b/app/javascript/mastodon/features/account_timeline/hooks/useAccountContext.ts
+index 46595425bd..791d6ed694 100644
+--- a/app/javascript/mastodon/features/account_timeline/hooks/useAccountContext.ts
++++ b/app/javascript/mastodon/features/account_timeline/hooks/useAccountContext.ts
+@@ -45,7 +45,7 @@ export const useAccountContextValue = (accountId?: string | null) => {
+ 
+   const [replies, setReplies] = useStorageState<boolean>(
+     'replies',
+-    false,
++    true,
+     storageOptions,
+   );
+ 
+diff --git a/app/javascript/mastodon/features/collections/editor/accounts.tsx b/app/javascript/mastodon/features/collections/editor/accounts.tsx
+index 0ead92b1c7..e08712aed3 100644
+--- a/app/javascript/mastodon/features/collections/editor/accounts.tsx
++++ b/app/javascript/mastodon/features/collections/editor/accounts.tsx
+@@ -44,7 +44,7 @@ import { canAccountBeAdded, canAccountBeAddedByFollowers } from '../utils';
+ import classes from './styles.module.scss';
+ import { WizardStepTitle } from './wizard_step_title';
+ 
+-export const MAX_COLLECTION_ACCOUNT_COUNT = 25;
++export const MAX_COLLECTION_ACCOUNT_COUNT = 150;
+ 
+ const AddedAccountItem: React.FC<{
+   accountId: string;
+diff --git a/app/javascript/mastodon/features/compose/components/compose_form.jsx b/app/javascript/mastodon/features/compose/components/compose_form.jsx
+index faecfa9b30..aa226c642c 100644
+--- a/app/javascript/mastodon/features/compose/components/compose_form.jsx
++++ b/app/javascript/mastodon/features/compose/components/compose_form.jsx
+@@ -38,7 +38,7 @@ const allowedAroundShortCode = '><\u0085\u0020\u00a0\u1680\u2000\u2001\u2002\u20
+ const messages = defineMessages({
+   placeholder: { id: 'compose_form.placeholder', defaultMessage: 'What is on your mind?' },
+   spoiler_placeholder: { id: 'compose_form.spoiler_placeholder', defaultMessage: 'Content warning (optional)' },
+-  publish: { id: 'compose_form.publish', defaultMessage: 'Post' },
++  publish: { id: 'compose_form.publish', defaultMessage: 'Toot!' },
+   saveChanges: { id: 'compose_form.save_changes', defaultMessage: 'Update' },
+   reply: { id: 'compose_form.reply', defaultMessage: 'Reply' },
+ });
+diff --git a/app/javascript/mastodon/features/compose/containers/upload_button_container.js b/app/javascript/mastodon/features/compose/containers/upload_button_container.js
+index 92399e8314..600865158f 100644
+--- a/app/javascript/mastodon/features/compose/containers/upload_button_container.js
++++ b/app/javascript/mastodon/features/compose/containers/upload_button_container.js
+@@ -13,7 +13,7 @@ const mapStateToProps = state => {
+   const hasQuote = !!state.compose.get('quoted_status_id');
+ 
+   return {
+-    disabled: isUploading || isOverLimit || hasVideoOrAudio || hasQuote,
++    disabled: isUploading || isOverLimit || hasVideoOrAudio,
+     resetFileKey: state.getIn(['compose', 'resetFileKey']),
+   };
+ };
+diff --git a/app/javascript/mastodon/locales/en-GB.json b/app/javascript/mastodon/locales/en-GB.json
+index d56cfc7361..daa8c8763d 100644
+--- a/app/javascript/mastodon/locales/en-GB.json
++++ b/app/javascript/mastodon/locales/en-GB.json
+@@ -489,9 +489,9 @@
+   "compose.error.blank_post": "Post can't be blank.",
+   "compose.language.change": "Change language",
+   "compose.language.search": "Search languages...",
+-  "compose.published.body": "Post published.",
++  "compose.published.body": "Toot published.",
+   "compose.published.open": "Open",
+-  "compose.saved.body": "Post saved.",
++  "compose.saved.body": "Toot saved.",
+   "compose_form.direct_message_warning_learn_more": "Learn more",
+   "compose_form.encryption_warning": "Posts on Mastodon are not end-to-end encrypted. Do not share any sensitive information over Mastodon.",
+   "compose_form.hashtag_warning": "This post won't be listed under any hashtag as it is not public. Only public posts can be searched by hashtag.",
+@@ -505,7 +505,7 @@
+   "compose_form.poll.switch_to_multiple": "Change poll to allow multiple choices",
+   "compose_form.poll.switch_to_single": "Change poll to allow for a single choice",
+   "compose_form.poll.type": "Style",
+-  "compose_form.publish": "Post",
++  "compose_form.publish": "Toot",
+   "compose_form.reply": "Reply",
+   "compose_form.save_changes": "Update",
+   "compose_form.spoiler.marked": "Remove content warning",
+diff --git a/app/javascript/mastodon/locales/en.json b/app/javascript/mastodon/locales/en.json
+index b7fb4c74fc..e8b93d99ba 100644
+--- a/app/javascript/mastodon/locales/en.json
++++ b/app/javascript/mastodon/locales/en.json
+@@ -493,9 +493,9 @@
+   "compose.error.blank_post": "Post can't be blank.",
+   "compose.language.change": "Change language",
+   "compose.language.search": "Search languages...",
+-  "compose.published.body": "Post published.",
++  "compose.published.body": "Toot published.",
+   "compose.published.open": "Open",
+-  "compose.saved.body": "Post saved.",
++  "compose.saved.body": "Toot saved.",
+   "compose_form.direct_message_warning_learn_more": "Learn more",
+   "compose_form.encryption_warning": "Posts on Mastodon are not end-to-end encrypted. Do not share any sensitive information over Mastodon.",
+   "compose_form.hashtag_warning": "This post won't be listed under any hashtag as it is not public. Only public posts can be searched by hashtag.",
+@@ -509,7 +509,7 @@
+   "compose_form.poll.switch_to_multiple": "Change poll to allow multiple choices",
+   "compose_form.poll.switch_to_single": "Change poll to allow for a single choice",
+   "compose_form.poll.type": "Style",
+-  "compose_form.publish": "Post",
++  "compose_form.publish": "Toot",
+   "compose_form.reply": "Reply",
+   "compose_form.save_changes": "Update",
+   "compose_form.spoiler.marked": "Remove content warning",
+diff --git a/app/models/collection.rb b/app/models/collection.rb
+index 0c1535ab39..85983af77e 100644
+--- a/app/models/collection.rb
++++ b/app/models/collection.rb
+@@ -22,7 +22,7 @@
+ #  tag_id                   :bigint(8)
+ #
+ class Collection < ApplicationRecord
+-  MAX_ITEMS = 25
++  MAX_ITEMS = 150
+   NAME_LENGTH_HARD_LIMIT = 256
+   DESCRIPTION_LENGTH_HARD_LIMIT = 2048
+ 
+diff --git a/app/validators/poll_options_validator.rb b/app/validators/poll_options_validator.rb
+index fd29fc1b44..387471544c 100644
+--- a/app/validators/poll_options_validator.rb
++++ b/app/validators/poll_options_validator.rb
+@@ -1,7 +1,7 @@
+ # frozen_string_literal: true
+ 
+ class PollOptionsValidator < ActiveModel::Validator
+-  MAX_OPTIONS      = 4
++  MAX_OPTIONS      = 8
+   MAX_OPTION_CHARS = 50
+ 
+   def validate(poll)
+diff --git a/app/validators/status_length_validator.rb b/app/validators/status_length_validator.rb
+index 575aaf1869..3280b96194 100644
+--- a/app/validators/status_length_validator.rb
++++ b/app/validators/status_length_validator.rb
+@@ -1,7 +1,7 @@
+ # frozen_string_literal: true
+ 
+ class StatusLengthValidator < ActiveModel::Validator
+-  MAX_CHARS = 500
++  MAX_CHARS = 3072
+   URL_PLACEHOLDER_CHARS = 23
+   URL_PLACEHOLDER = 'x' * 23
+ 
+diff --git a/config/initializers/chewy.rb b/config/initializers/chewy.rb
+index b1c50ce525..4181ab8184 100644
+--- a/config/initializers/chewy.rb
++++ b/config/initializers/chewy.rb
+@@ -7,8 +7,13 @@ user            = ENV.fetch('ES_USER', nil).presence
+ password        = ENV.fetch('ES_PASS', nil).presence
+ prefix          = ENV.fetch('ES_PREFIX', nil)
+ ca_file         = ENV.fetch('ES_CA_FILE', nil).presence
++verify_ssl      = ENV.fetch('ES_VERIFY_SSL', 'true') == 'true'
+ 
+-transport_options = { ssl: { ca_file: ca_file } } if ca_file.present?
++ssl_options = {}
++ssl_options[:ca_file] = ca_file if ca_file.present?
++ssl_options[:verify]  = false unless verify_ssl
++
++transport_options = { ssl: ssl_options } if ssl_options.present?
+ 
+ Chewy.settings = {
+   host: "#{host}:#{port}",
+@@ -35,4 +40,4 @@ Chewy.use_after_commit_callbacks = false
+ # http_proxy env variable by default which leads to issues when
+ # Mastodon is run with hidden services enabled, because
+ # Elasticsearch is *not* supposed to be accessed through a proxy
+-Faraday.ignore_env_proxy = true
++Faraday.ignore_env_proxy = true
+\ No newline at end of file
+diff --git a/public/robots.txt b/public/robots.txt
+index cccfa58f2d..36dfa51e86 100644
+--- a/public/robots.txt
++++ b/public/robots.txt
+@@ -1,9 +1,65 @@
+ # See http://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+ 
+-User-agent: GPTBot
+-Disallow: /
+-
+ User-agent: *
+ Disallow: /media_proxy/
+ Disallow: /interact/
+ Disallow: /api/v1/instance/domain_blocks
++
++###############################################################################################################################
++# AI Bots - Crawlers/scrapers and data harvesters. Blocking these should not negatively effect the end user.
++###############################################################################################################################
++
++# OpenAI Scraper/Crawler/Assistant https://platform.openai.com/docs/bots
++# "GPTBot is used to make our generative AI foundation models more useful and safe. It is used to crawl content that may be used in training our generative AI foundation models"
++User-agent: GPTBot
++Disallow: /
++# "When users ask ChatGPT or a CustomGPT a question, it may visit a web page to help answer"
++User-agent: ChatGPT-User
++Disallow: /
++# "OAI-SearchBot is used to link to and surface websites in search results in the SearchGPT prototype"
++User-agent: OAI-SearchBot
++Disallow: /
++
++# Amazon Alexa Crawler https://developer.amazon.com/amazonbot
++# "Amazonbot is Amazon's web crawler used to improve our services, such as enabling Alexa to answer even more questions for customers"
++User-agent: Amazonbot
++Disallow: /
++
++# Apple Siri Crawler https://support.apple.com/en-au/HT204683
++# "Applebot is the web crawler for Apple. Products like Siri and Spotlight Suggestions use Applebot"
++User-agent: Applebot
++Disallow: /
++
++# Apple AI models https://support.apple.com/en-au/119829
++# "Allowing Applebot-Extended will help improve the capabilities and quality of Apple’s generative AI models over time"
++User-agent: Applebot-Extended
++Disallow: /
++
++# Common Crawl https://commoncrawl.org/ccbot
++# "democratizing access to web information by producing and maintaining an open repository of web crawl data that is universally accessible and analyzable by anyone"
++User-agent: CCBot
++Disallow: /
++
++# Facebook AI models https://developers.facebook.com/docs/sharing/bot/
++# "FacebookBot crawls public web pages to improve language models for our speech recognition technology."
++User-agent: FacebookBot
++Disallow: /
++
++# Facebook AI models https://developers.facebook.com/docs/sharing/webmasters/crawler
++# "training AI models or improving products by indexing content directly"
++User-agent: Meta-ExternalAgent
++Disallow: /
++
++# Googles AI models https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers
++# "help improve Gemini Apps and Vertex AI generative APIs, including future generations of models that power those products"
++User-agent: Google-Extended
++Disallow: /
++
++# Anthropic AI Modals https://support.anthropic.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler
++# "Our mission to build safe and reliable frontier systems and advance the field of responsible AI development"
++User-agent: anthropic-ai
++Disallow: /
++User-agent: ClaudeBot
++Disallow: /
++User-agent: Claude-Web
++Disallow: /
+diff --git a/docker-compose-sidekiq.yml b/docker-compose-sidekiq.yml
+new file mode 100644
+index 0000000000..a7260f962a
+--- /dev/null
++++ b/docker-compose-sidekiq.yml
+@@ -0,0 +1,117 @@
++services:
++
++  sidekiq1:
++    build: .
++    image: tootsuite/mastodon
++    restart: always
++    env_file: .env.production
++    command: bundle exec sidekiq -q default,1 -q pull,2 -q push,3 -q ingress,4  -c 25
++    networks:
++      - external_network
++      - internal_network
++    volumes:
++      - ./public/system:/mastodon/public/system
++    healthcheck:
++      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
++    ulimits:
++      memlock:
++        soft: -1
++        hard: -1
++      nofile:
++        soft: 65536
++        hard: 65536
++    deploy:
++      mode: replicated
++      replicas: 3
++
++  sidekiq2:
++    build: .
++    image: tootsuite/mastodon
++    restart: always
++    env_file: .env.production
++    command: bundle exec sidekiq -q default,2 -q pull,3 -q push,4 -q ingress,1  -c 25
++    networks:
++      - external_network
++      - internal_network
++    volumes:
++      - ./public/system:/mastodon/public/system
++    healthcheck:
++      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
++    ulimits:
++      memlock:
++        soft: -1
++        hard: -1
++      nofile:
++        soft: 65536
++        hard: 65536
++    deploy:
++      mode: replicated
++      replicas: 3
++
++  sidekiq3:
++    build: .
++    image: tootsuite/mastodon
++    restart: always
++    env_file: .env.production
++    command: bundle exec sidekiq -q default,3 -q pull,4 -q push,1 -q ingress,2  -c 25
++    networks:
++      - external_network
++      - internal_network
++    volumes:
++      - ./public/system:/mastodon/public/system
++    healthcheck:
++      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
++    ulimits:
++      memlock:
++        soft: -1
++        hard: -1
++      nofile:
++        soft: 65536
++        hard: 65536
++    deploy:
++      mode: replicated
++      replicas: 3
++
++  sidekiq4:
++    build: .
++    image: tootsuite/mastodon
++    restart: always
++    env_file: .env.production
++    command: bundle exec sidekiq -q default,4 -q pull,1 -q push,2 -q ingress,3  -c 25
++    networks:
++      - external_network
++      - internal_network
++    volumes:
++      - ./public/system:/mastodon/public/system
++    healthcheck:
++      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
++    ulimits:
++      memlock:
++        soft: -1
++        hard: -1
++      nofile:
++        soft: 65536
++        hard: 65536
++    deploy:
++      mode: replicated
++      replicas: 3
++
++  sidekiq-main:
++    build: .
++    image: tootsuite/mastodon
++    restart: always
++    env_file: .env.production
++    command: bundle exec sidekiq -q scheduler,1 -q fasp,2 -q mailers,5 -c 5
++    networks:
++      - external_network
++      - internal_network
++    volumes:
++      - ./public/system:/mastodon/public/system
++    healthcheck:
++      test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 7' || false"]
++
++
++networks:
++  external_network:
++  internal_network:
++    internal: true
+\ No newline at end of file
+diff --git a/docker-compose-web.yml b/docker-compose-web.yml
+new file mode 100644
+index 0000000000..3738c24698
+--- /dev/null
++++ b/docker-compose-web.yml
+@@ -0,0 +1,51 @@
++services:
++  web:
++    build: .
++    image: tootsuite/mastodon
++    restart: always
++    env_file: .env.production
++    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
++    networks:
++      - external_network
++      - internal_network
++    healthcheck:
++      # prettier-ignore
++      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
++    ports:
++      - '192.168.135.76:3000:3000'
++    volumes:
++      - ./public/system:/mastodon/public/system
++    ulimits:
++      memlock:
++        soft: -1
++        hard: -1
++      nofile:
++        soft: 65536
++        hard: 65536
++
++  streaming:
++    #build: .
++    image: ghcr.io/mastodon/mastodon-streaming:nightly
++    restart: always
++    env_file: .env.production
++    command: node ./streaming
++    networks:
++      - external_network
++      - internal_network
++    healthcheck:
++      # prettier-ignore
++      test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
++    ports:
++      - '192.168.135.76:4000:4000'
++    ulimits:
++      memlock:
++        soft: -1
++        hard: -1
++      nofile:
++        soft: 65536
++        hard: 65536
++
++networks:
++  external_network:
++  internal_network:
++    internal: true
+\ No newline at end of file
