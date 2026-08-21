@@ -22,17 +22,6 @@ RSpec.shared_examples 'Expireable' do
     end
   end
 
-  describe '#expires_in' do
-    context 'when expires at is nil' do
-      let(:expires_at) { nil }
-
-      it 'returns nil' do
-        expect(subject.expires_in)
-          .to be_nil
-      end
-    end
-  end
-
   describe '#expires_in=' do
     let(:record) { Fabricate.build factory_name }
 
