@@ -416,19 +416,6 @@ class Account < ApplicationRecord
     self[:fields] = fields
   end
 
-  def build_fields
-    return if fields.size >= DEFAULT_FIELDS_SIZE
-
-    tmp = self[:fields] || []
-    tmp = [] if tmp.is_a?(Hash)
-
-    (DEFAULT_FIELDS_SIZE - tmp.size).times do
-      tmp << { name: '', value: '' }
-    end
-
-    self.fields = tmp
-  end
-
   def save_with_optional_media!
     save!
   rescue ActiveRecord::RecordInvalid => e
