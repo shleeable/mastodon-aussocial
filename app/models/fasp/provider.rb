@@ -53,18 +53,6 @@ class Fasp::Provider < ApplicationRecord
     self[:capabilities] = capability_objects.map(&:attributes)
   end
 
-  def enabled_capabilities
-    capabilities.select(&:enabled).map(&:id)
-  end
-
-  def capability?(capability_name)
-    return false unless confirmed?
-
-    capabilities.present? && capabilities.any? do |capability|
-      capability.id == capability_name
-    end
-  end
-
   def capability_enabled?(capability_name)
     return false unless confirmed?
 
