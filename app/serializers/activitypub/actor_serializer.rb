@@ -245,24 +245,4 @@ class ActivityPub::ActorSerializer < ActivityPub::Serializer
       account_field_value_format(object)
     end
   end
-
-  class AccountIdentityProofSerializer < ActivityPub::Serializer
-    attributes :type, :name, :signature_algorithm, :signature_value
-
-    def type
-      'IdentityProof'
-    end
-
-    def name
-      object.provider_username
-    end
-
-    def signature_algorithm
-      object.provider
-    end
-
-    def signature_value
-      object.token
-    end
-  end
 end
