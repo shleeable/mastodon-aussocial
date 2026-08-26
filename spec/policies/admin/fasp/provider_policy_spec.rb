@@ -28,7 +28,7 @@ RSpec.describe Admin::Fasp::ProviderPolicy, type: :policy do
     it_behaves_like 'admin only', Fasp::Provider
   end
 
-  permissions :show?, :create?, :update?, :destroy? do
+  permissions :create?, :update?, :destroy? do
     it_behaves_like 'admin only', :fasp_provider
   end
 end
