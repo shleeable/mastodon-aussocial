@@ -2312,12 +2312,6 @@ body > [data-popover-placement] {
     background-color: var(--color-bg-tertiary);
   }
 
-  &--inline {
-    display: inline-block;
-    vertical-align: middle;
-    margin-inline-end: 5px;
-  }
-
   &-composite {
     border-radius: 50%;
     overflow: hidden;
