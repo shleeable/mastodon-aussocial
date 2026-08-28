@@ -202,39 +202,6 @@ on(
   },
 );
 
-function onEnableBootstrapTimelineAccountsChange(target: HTMLInputElement) {
-  const bootstrapTimelineAccountsField =
-    document.querySelector<HTMLInputElement>(
-      '#form_admin_settings_bootstrap_timeline_accounts',
-    );
-
-  if (bootstrapTimelineAccountsField) {
-    bootstrapTimelineAccountsField.disabled = !target.checked;
-    if (target.checked) {
-      bootstrapTimelineAccountsField.parentElement?.classList.remove(
-        'disabled',
-      );
-      bootstrapTimelineAccountsField.parentElement?.parentElement?.classList.remove(
-        'disabled',
-      );
-    } else {
-      bootstrapTimelineAccountsField.parentElement?.classList.add('disabled');
-      bootstrapTimelineAccountsField.parentElement?.parentElement?.classList.add(
-        'disabled',
-      );
-    }
-  }
-}
-
-on(
-  'change',
-  '#form_admin_settings_enable_bootstrap_timeline_accounts',
-  ({ target }) => {
-    if (target instanceof HTMLInputElement)
-      onEnableBootstrapTimelineAccountsChange(target);
-  },
-);
-
 const onChangeRegistrationMode = (target: HTMLSelectElement) => {
   const enabled = target.value === 'approved';
 
@@ -314,13 +281,6 @@ ready(() => {
   );
   if (domainBlockSeveritySelect)
     onDomainBlockSeverityChange(domainBlockSeveritySelect);
-
-  const enableBootstrapTimelineAccounts =
-    document.querySelector<HTMLInputElement>(
-      'input#form_admin_settings_enable_bootstrap_timeline_accounts',
-    );
-  if (enableBootstrapTimelineAccounts)
-    onEnableBootstrapTimelineAccountsChange(enableBootstrapTimelineAccounts);
 
   const registrationMode = document.querySelector<HTMLSelectElement>(
     'select#form_admin_settings_registrations_mode',
