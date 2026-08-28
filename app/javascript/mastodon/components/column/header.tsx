@@ -84,9 +84,7 @@ export interface ColumnHeaderProps {
   multiColumn?: boolean;
   extraButton?: React.ReactNode;
   showBackButton?: boolean;
-  placeholder?: boolean;
   appendContent?: React.ReactNode;
-  collapseIssues?: boolean;
   scrollTopOnClick?: boolean;
   onClick?: () => void;
   onMove?: (arg0: number) => void;
@@ -104,9 +102,7 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = ({
   multiColumn,
   extraButton,
   showBackButton,
-  placeholder,
   appendContent,
-  collapseIssues,
   scrollTopOnClick,
   onClick,
   onMove,
@@ -263,7 +259,6 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = ({
             id='sliders'
             icon={collapsed ? UnfoldMoreIcon : UnfoldLessIcon}
           />
-          {collapseIssues && <i className='icon-with-badge__issue-badge' />}
         </i>
       </button>
     );
@@ -337,9 +332,5 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = ({
     </div>
   );
 
-  if (placeholder) {
-    return component;
-  } else {
-    return <ButtonInTabsBar>{component}</ButtonInTabsBar>;
-  }
+  return <ButtonInTabsBar>{component}</ButtonInTabsBar>;
 };
