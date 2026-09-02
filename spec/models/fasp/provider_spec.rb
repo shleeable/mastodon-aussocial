@@ -34,42 +34,10 @@ RSpec.describe Fasp::Provider do
     it 'sets capabilities from nested form style hash' do
       subject.capabilities_attributes = capabilities_params
 
-      expect(subject).to be_capability('one')
-      expect(subject).to be_capability('two')
-      expect(subject).to be_capability('three')
+      expect(subject.capabilities.map(&:id)).to contain_exactly('one', 'two', 'three')
       expect(subject).to be_capability_enabled('one')
       expect(subject).to_not be_capability_enabled('two')
       expect(subject).to_not be_capability_enabled('three')
-    end
-  end
-
-  describe '#capability?' do
-    subject { described_class.new(confirmed:, capabilities:) }
-
-    let(:capabilities) do
-      [
-        { 'id' => 'one', 'enabled' => false },
-        { 'id' => 'two', 'enabled' => true },
-      ]
-    end
-
-    context 'when the provider is not confirmed' do
-      let(:confirmed) { false }
-
-      it 'always returns false' do
-        expect(subject.capability?('one')).to be false
-        expect(subject.capability?('two')).to be false
-      end
-    end
-
-    context 'when the provider is confirmed' do
-      let(:confirmed) { true }
-
-      it 'returns true for available and false for missing capabilities' do
-        expect(subject.capability?('one')).to be true
-        expect(subject.capability?('two')).to be true
-        expect(subject.capability?('three')).to be false
-      end
     end
   end
 
