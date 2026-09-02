@@ -1,10 +1,9 @@
-import { Provider } from 'react-redux';
-
 import { configureStore } from '@reduxjs/toolkit';
 import { Map as ImmutableMap } from 'immutable';
+import { Provider } from 'react-redux';
 
-import { render, screen } from '@/testing/rendering';
 import { accountFactoryImmutable } from '@/testing/factories';
+import { render, screen } from '@/testing/rendering';
 import type { NotificationGroupAdminReport } from 'mastodon/models/notification_group';
 import { reducerWithInitialState } from 'mastodon/reducers';
 
@@ -32,13 +31,18 @@ describe('<NotificationAdminReport />', () => {
     display_name: 'Remote User',
   });
 
-  const createMockStore = (accountsMap: Record<string, ReturnType<typeof accountFactoryImmutable>>) =>
+  const createMockStore = (
+    accountsMap: Record<string, ReturnType<typeof accountFactoryImmutable>>,
+  ) =>
     configureStore({
       reducer: reducerWithInitialState({
         accounts: ImmutableMap(accountsMap),
       }),
       middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({ serializableCheck: false, immutableCheck: false }),
+        getDefaultMiddleware({
+          serializableCheck: false,
+          immutableCheck: false,
+        }),
     });
 
   it('renders (local) suffix when reported account is local', () => {
