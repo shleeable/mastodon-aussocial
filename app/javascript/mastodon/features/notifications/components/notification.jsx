@@ -487,14 +487,20 @@ class Notification extends ImmutablePureComponent {
     }
 
     const targetAccount = report.get('target_account');
-    const targetLink = <LinkedDisplayName
-      className='notification__display-name'
-      displayProps={{account:targetAccount, variant: 'simple'}}
-    />;
+    const isLocal = targetAccount.get('acct').indexOf('@') === -1;
+    const targetSuffix = isLocal ? 'local' : 'remote';
+    const targetLink = (
+      <>
+        <LinkedDisplayName
+          className='notification__display-name'
+          displayProps={{account:targetAccount, variant: 'simple'}}
+        /> ({targetSuffix})
+      </>
+    );
 
     return (
       <Hotkeys handlers={this.getHandlers()}>
-        <div className={classNames('notification notification-admin-report focusable', { unread })} tabIndex={0} aria-label={notificationForScreenReader(intl, intl.formatMessage(messages.adminReport, { name: account.get('acct'), target: notification.getIn(['report', 'target_account', 'acct']) }), notification.get('created_at'))}>
+        <div className={classNames('notification notification-admin-report focusable', { unread })} tabIndex={0} aria-label={notificationForScreenReader(intl, intl.formatMessage(messages.adminReport, { name: account.get('acct'), target: `${notification.getIn(['report', 'target_account', 'acct'])} (${targetSuffix})` }), notification.get('created_at'))}>
           <div className='notification__message'>
             <Icon id='flag' icon={FlagIcon} />
 
