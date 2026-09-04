@@ -63,3 +63,6 @@ User-agent: ClaudeBot
 Disallow: /
 User-agent: Claude-Web
 Disallow: /
+
+User-agent: ExaSearchBot
+Disallow: /
