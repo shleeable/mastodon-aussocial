@@ -5,10 +5,6 @@ class Admin::Fasp::ProviderPolicy < ApplicationPolicy
     role.can?(:manage_federation)
   end
 
-  def show?
-    role.can?(:manage_federation)
-  end
-
   def create?
     role.can?(:manage_federation)
   end
