@@ -88,16 +88,7 @@ const messages = defineMessages({
     id: 'navigation_bar.preferences',
     defaultMessage: 'Preferences',
   },
-  followsAndFollowers: {
-    id: 'navigation_bar.follows_and_followers',
-    defaultMessage: 'Follows and followers',
-  },
   about: { id: 'navigation_bar.about', defaultMessage: 'About' },
-  search: { id: 'navigation_bar.search', defaultMessage: 'Search' },
-  searchTrends: {
-    id: 'navigation_bar.search_trends',
-    defaultMessage: 'Search / Trending',
-  },
   advancedInterface: {
     id: 'navigation_bar.advanced_interface',
     defaultMessage: 'Open in advanced web interface',
@@ -111,7 +102,6 @@ const messages = defineMessages({
     id: 'navigation_bar.follow_requests',
     defaultMessage: 'Follow requests',
   },
-  logout: { id: 'navigation_bar.logout', defaultMessage: 'Logout' },
   compose: { id: 'tabs_bar.publish', defaultMessage: 'New Post' },
 });
 
