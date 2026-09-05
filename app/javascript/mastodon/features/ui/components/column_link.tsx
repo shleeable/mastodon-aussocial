@@ -14,8 +14,6 @@ export const ColumnLink: React.FC<{
   text: string;
   to?: MastodonLocationDescriptor;
   href?: string;
-  method?: string;
-  badge?: React.ReactNode;
   transparent?: boolean;
   className?: string;
   id?: string;
@@ -27,8 +25,6 @@ export const ColumnLink: React.FC<{
   text,
   to,
   href,
-  method,
-  badge,
   transparent,
   ...other
 }) => {
@@ -38,10 +34,6 @@ export const ColumnLink: React.FC<{
   const className = classNames('column-link', {
     'column-link--transparent': transparent,
   });
-  const badgeElement =
-    typeof badge !== 'undefined' ? (
-      <span className='column-link__badge'>{badge}</span>
-    ) : null;
   const iconElement = iconComponent ? (
     <Icon
       id={typeof icon === 'string' ? icon : ''}
@@ -66,10 +58,9 @@ export const ColumnLink: React.FC<{
 
   if (href) {
     return (
-      <a href={href} className={className} data-method={method} {...other}>
+      <a href={href} className={className} {...other}>
         {active ? activeIconElement : iconElement}
         <span>{text}</span>
-        {badgeElement}
       </a>
     );
   } else if (to) {
@@ -77,7 +68,6 @@ export const ColumnLink: React.FC<{
       <NavLink to={to} className={className} {...other}>
         {active ? activeIconElement : iconElement}
         <span>{text}</span>
-        {badgeElement}
       </NavLink>
     );
   } else {
