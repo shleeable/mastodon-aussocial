@@ -117,7 +117,7 @@ class Api::V1::Admin::AccountsController < Api::BaseController
 
     translated_params[:origin] = 'remote' if params[:remote].present?
 
-    %i(active pending disabled silenced suspended).each do |status|
+    %i(active pending disabled silenced suspended sensitized).each do |status|
       translated_params[:status] = status.to_s if params[status].present?
     end
 
