@@ -175,6 +175,7 @@ module Mastodon::CLI
       user.change_password!(password) if options[:reset_password]
 
       if user.save
+        user.approve! if options[:approve]
         user.confirm if options[:confirm]
 
         say('OK', :green)
