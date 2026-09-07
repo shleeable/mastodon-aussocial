@@ -7,7 +7,6 @@ import {
   apiDeleteFeaturedTag,
   apiDeleteProfileAvatar,
   apiDeleteProfileHeader,
-  apiGetCurrentFeaturedTags,
   apiGetProfile,
   apiGetTagSuggestions,
   apiPatchProfile,
@@ -333,12 +332,6 @@ export const removeField = createAppAsyncThunk(
       }),
     );
   },
-);
-
-export const fetchFeaturedTags = createDataLoadingThunk(
-  `${profileEditSlice.name}/fetchFeaturedTags`,
-  apiGetCurrentFeaturedTags,
-  { useLoadingBar: false },
 );
 
 export const fetchSuggestedTags = createDataLoadingThunk(
