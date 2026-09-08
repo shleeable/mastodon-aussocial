@@ -362,13 +362,4 @@ export default tseslint.config([
       'react-hooks/rules-of-hooks': 'off',
     },
   },
-  {
-    files: ['vitest.shims.d.ts'],
-    rules: {
-      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/no-useless-default-assignment': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
-    },
-  },
 ]);
