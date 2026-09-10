@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 
@@ -33,55 +33,47 @@ const messages = defineMessages({
   },
 });
 
-export const PrivateQuoteNotify = forwardRef<
-  HTMLDivElement,
-  BaseConfirmationModalProps
->(
-  (
-    { onClose },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _ref,
-  ) => {
-    const intl = useIntl();
+export const PrivateQuoteNotify: React.FC<BaseConfirmationModalProps> = ({
+  onClose,
+}) => {
+  const intl = useIntl();
 
-    const [dismiss, setDismissed] = useState(false);
-    const handleDismissToggle = useCallback(() => {
-      setDismissed((prev) => !prev);
-    }, []);
+  const [dismiss, setDismissed] = useState(false);
+  const handleDismissToggle = useCallback(() => {
+    setDismissed((prev) => !prev);
+  }, []);
 
-    const dispatch = useAppDispatch();
-    const handleConfirm = useCallback(() => {
-      dispatch(submitCompose());
-      if (dismiss) {
-        dispatch(
-          changeSetting(['dismissed_banners', PRIVATE_QUOTE_MODAL_ID], true),
-        );
+  const dispatch = useAppDispatch();
+  const handleConfirm = useCallback(() => {
+    dispatch(submitCompose());
+    if (dismiss) {
+      dispatch(
+        changeSetting(['dismissed_banners', PRIVATE_QUOTE_MODAL_ID], true),
+      );
+    }
+  }, [dismiss, dispatch]);
+
+  return (
+    <ConfirmationModal
+      title={intl.formatMessage(messages.title)}
+      message={intl.formatMessage(messages.message)}
+      confirm={intl.formatMessage(messages.confirm)}
+      cancel={intl.formatMessage(messages.cancel)}
+      onConfirm={handleConfirm}
+      onClose={onClose}
+      extraContent={
+        <label className={classes.checkbox_wrapper}>
+          <CheckBox
+            value='hide'
+            checked={dismiss}
+            onChange={handleDismissToggle}
+          />{' '}
+          <FormattedMessage
+            id='confirmations.private_quote_notify.do_not_show_again'
+            defaultMessage="Don't show me this message again"
+          />
+        </label>
       }
-    }, [dismiss, dispatch]);
-
-    return (
-      <ConfirmationModal
-        title={intl.formatMessage(messages.title)}
-        message={intl.formatMessage(messages.message)}
-        confirm={intl.formatMessage(messages.confirm)}
-        cancel={intl.formatMessage(messages.cancel)}
-        onConfirm={handleConfirm}
-        onClose={onClose}
-        extraContent={
-          <label className={classes.checkbox_wrapper}>
-            <CheckBox
-              value='hide'
-              checked={dismiss}
-              onChange={handleDismissToggle}
-            />{' '}
-            <FormattedMessage
-              id='confirmations.private_quote_notify.do_not_show_again'
-              defaultMessage="Don't show me this message again"
-            />
-          </label>
-        }
-      />
-    );
-  },
-);
-PrivateQuoteNotify.displayName = 'PrivateQuoteNotify';
+    />
+  );
+};
