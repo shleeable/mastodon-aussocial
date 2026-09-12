@@ -63,17 +63,6 @@ class WorkerBatch
     end
   end
 
-  def finish!
-    async_refresh_key = redis.hget(key, 'async_refresh_key')
-
-    if async_refresh_key.present?
-      async_refresh = AsyncRefresh.new(async_refresh_key)
-      async_refresh.finish!
-    end
-
-    cleanup
-  end
-
   # Get pending jobs.
   # @returns [Array<String>]
   def jobs
