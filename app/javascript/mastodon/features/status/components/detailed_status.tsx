@@ -31,7 +31,6 @@ import MediaGallery from 'mastodon/components/media_gallery';
 import { VisibilityIcon } from 'mastodon/components/visibility_icon';
 import { Audio } from 'mastodon/features/audio';
 import { CollectionPreviewCard } from 'mastodon/features/collections/components/collection_preview_card';
-import scheduleIdleTask from 'mastodon/features/ui/util/schedule_idle_task';
 import { Video } from 'mastodon/features/video';
 import { useIdentity } from 'mastodon/identity_context';
 import type { CollectionAttachment } from 'mastodon/models/status';
@@ -50,8 +49,6 @@ export const DetailedStatus: React.FC<{
   onOpenMedia?: (status: any, index: number, lang: string) => void;
   onOpenVideo?: (status: any, lang: string, options: VideoModalOptions) => void;
   onTranslate?: (status: any) => void;
-  measureHeight?: boolean;
-  onHeightChange?: () => void;
   domain: string;
   showMedia?: boolean;
   withLogo?: boolean;
@@ -66,8 +63,6 @@ export const DetailedStatus: React.FC<{
   onOpenMedia,
   onOpenVideo,
   onTranslate,
-  measureHeight,
-  onHeightChange,
   domain,
   showMedia,
   withLogo,
@@ -79,7 +74,6 @@ export const DetailedStatus: React.FC<{
   multiColumn = false,
 }) => {
   const properStatus = status?.get('reblog') ?? status;
-  const [height, setHeight] = useState(0);
   const [showDespiteFilter, setShowDespiteFilter] = useState(false);
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -103,29 +97,9 @@ export const DetailedStatus: React.FC<{
     if (onToggleHidden) onToggleHidden(status);
   }, [onToggleHidden, status]);
 
-  const _measureHeight = useCallback(
-    (heightJustChanged?: boolean) => {
-      if (measureHeight && nodeRef.current) {
-        scheduleIdleTask(() => {
-          if (nodeRef.current)
-            setHeight(Math.ceil(nodeRef.current.scrollHeight) + 1);
-        });
-
-        if (onHeightChange && heightJustChanged) {
-          onHeightChange();
-        }
-      }
-    },
-    [onHeightChange, measureHeight, setHeight],
-  );
-
-  const handleRef = useCallback(
-    (c: HTMLDivElement) => {
-      nodeRef.current = c;
-      _measureHeight();
-    },
-    [_measureHeight],
-  );
+  const handleRef = useCallback((c: HTMLDivElement) => {
+    nodeRef.current = c;
+  }, []);
 
   const handleTranslate = useCallback(() => {
     if (onTranslate) onTranslate(status);
@@ -184,10 +158,6 @@ export const DetailedStatus: React.FC<{
   }
 
   const outerStyle = { boxSizing: 'border-box' } as CSSProperties;
-
-  if (measureHeight) {
-    outerStyle.height = height;
-  }
 
   const language =
     status.getIn(['translation', 'language']) || status.get('language');
