@@ -219,14 +219,6 @@ class Status < ApplicationRecord
     created_at >= REAL_TIME_WINDOW.ago
   end
 
-  def verb
-    if destroyed?
-      :delete
-    else
-      reblog? ? :share : :post
-    end
-  end
-
   def object_type
     reply? ? :comment : :note
   end
@@ -237,10 +229,6 @@ class Status < ApplicationRecord
 
   def content
     proper.text
-  end
-
-  def target
-    reblog
   end
 
   def preview_card
