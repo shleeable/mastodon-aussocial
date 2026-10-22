@@ -149,7 +149,7 @@ RSpec.describe MediaAttachment, :attachment_processing do
     it_behaves_like 'static 600x400 image', 'image/webp', '.webp'
   end
 
-  describe 'avif', skip: 'HEIF temporarily disabled' do
+  describe 'avif' do
     let(:media) { Fabricate(:media_attachment, file: attachment_fixture('600x400.avif')) }
 
     it_behaves_like 'static 600x400 image', 'image/jpeg', '.jpeg'

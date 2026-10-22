@@ -123,6 +123,8 @@ RUN \
   libcgif0 \
   libexif12 \
   libheif1 \
+  libheif-plugin-aomdec \
+  libheif-plugin-aomenc \
   libhwy1t64 \
   libimagequant0 \
   libjpeg62-turbo \
@@ -185,6 +187,7 @@ RUN \
   libexpat1-dev \
   libgirepository1.0-dev \
   libglib2.0-dev \
+  libaom-dev \
   libheif-dev \
   libhwy-dev \
   libimagequant-dev \
