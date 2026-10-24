@@ -38,11 +38,11 @@ module Mastodon::CLI
         fail_with_message 'Please specify at least one cleanup category (--domain, --local-suspended, --remote-suspended, --local-deleted, --suspended-instances, --limited-instances, --reject-media-instances, --availability-failing, --availability-unavailable, or --all)'
       end
 
+      target_domain = options[:domain].present? ? TagManager.instance.normalize_domain(options[:domain].to_s.strip) : nil
       scopes = []
 
-      if options[:domain].present?
-        target_domain = TagManager.instance.normalize_domain(options[:domain])
-        scopes << Account.remote.where(domain: target_domain)
+      if target_domain.present?
+        scopes << Account.remote.with_domain(target_domain)
       end
 
       if options[:local_suspended] || options[:all]
@@ -50,7 +50,9 @@ module Mastodon::CLI
       end
 
       if options[:remote_suspended] || options[:all]
-        scopes << Account.remote.suspended
+        scope = Account.remote.suspended
+        scope = scope.with_domain(target_domain) if target_domain.present?
+        scopes << scope
       end
 
       if options[:local_deleted] || options[:all]
@@ -58,23 +60,33 @@ module Mastodon::CLI
       end
 
       if options[:suspended_instances] || options[:all]
-        scopes << Account.remote.where(domain: DomainBlock.suspend.select(:domain))
+        domain_scope = DomainBlock.suspend.select(:domain)
+        domain_scope = domain_scope.where('lower(domain) = lower(?)', target_domain) if target_domain.present?
+        scopes << Account.remote.where(domain: domain_scope)
       end
 
       if options[:limited_instances] || options[:all]
-        scopes << Account.remote.where(domain: DomainBlock.silence.select(:domain))
+        domain_scope = DomainBlock.silence.select(:domain)
+        domain_scope = domain_scope.where('lower(domain) = lower(?)', target_domain) if target_domain.present?
+        scopes << Account.remote.where(domain: domain_scope)
       end
 
       if options[:reject_media_instances] || options[:all]
-        scopes << Account.remote.where(domain: DomainBlock.where(reject_media: true).select(:domain))
+        domain_scope = DomainBlock.where(reject_media: true).select(:domain)
+        domain_scope = domain_scope.where('lower(domain) = lower(?)', target_domain) if target_domain.present?
+        scopes << Account.remote.where(domain: domain_scope)
       end
 
       if options[:availability_failing] || options[:all]
-        scopes << Account.remote.where(domain: DeliveryFailureTracker.warning_domains)
+        warning_domains = DeliveryFailureTracker.warning_domains
+        warning_domains = warning_domains.select { |d| d.casecmp?(target_domain) } if target_domain.present?
+        scopes << Account.remote.where(domain: warning_domains)
       end
 
       if options[:availability_unavailable] || options[:all]
-        scopes << Account.remote.where(domain: UnavailableDomain.select(:domain))
+        domain_scope = UnavailableDomain.select(:domain)
+        domain_scope = domain_scope.where('lower(domain) = lower(?)', target_domain) if target_domain.present?
+        scopes << Account.remote.where(domain: domain_scope)
       end
 
       combined_scope = scopes.reduce(:or).without_instance_actor

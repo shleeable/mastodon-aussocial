@@ -50,14 +50,26 @@ RSpec.describe Mastodon::CLI::Cleanup do
       end
 
       context 'with --domain' do
-        let(:options) { { domain: 'target-domain.com' } }
+        let(:options) { { domain: 'TARGET-DOMAIN.COM' } }
 
-        it 'deletes remote accounts from specified domain only' do
+        it 'deletes remote accounts from specified domain case-insensitively' do
           expect { subject }
             .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
 
           expect(delete_account_service).to have_received(:call).with(specific_domain_account, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to_not have_received(:call).with(active_remote_account, any_args)
+        end
+      end
+
+      context 'with --domain combined with category flags' do
+        let(:options) { { domain: 'suspended-instance.com', suspended_instances: true } }
+
+        it 'restricts suspended_instances scope to specified domain' do
+          expect { subject }
+            .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
+
+          expect(delete_account_service).to have_received(:call).with(account_on_suspended_instance, reserve_username: false, reserve_email: false, skip_side_effects: true).once
+          expect(delete_account_service).to_not have_received(:call).with(remote_suspended, any_args)
         end
       end
 
