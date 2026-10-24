@@ -15,6 +15,38 @@ RSpec.describe InstanceFilter do
       allow(DeliveryFailureTracker).to receive(:warning_domains).and_return(['failing.com'])
     end
 
+    let!(:limited_instance) { Fabricate(:instance, domain: 'limited.com') }
+    let!(:limited_block) { Fabricate(:domain_block, domain: 'limited.com', severity: :silence) }
+    let!(:suspended_instance) { Fabricate(:instance, domain: 'suspended.com') }
+    let!(:suspended_block) { Fabricate(:domain_block, domain: 'suspended.com', severity: :suspend) }
+
+    context 'with limited = "1"' do
+      let(:params) { { limited: '1' } }
+
+      it 'returns all blocked instances (limited and suspended)' do
+        expect(subject.results).to include(limited_instance)
+        expect(subject.results).to include(suspended_instance)
+      end
+    end
+
+    context 'with limited = "limited"' do
+      let(:params) { { limited: 'limited' } }
+
+      it 'returns only limited (silenced) instances' do
+        expect(subject.results).to include(limited_instance)
+        expect(subject.results).to_not include(suspended_instance)
+      end
+    end
+
+    context 'with limited = "suspended"' do
+      let(:params) { { limited: 'suspended' } }
+
+      it 'returns only suspended instances' do
+        expect(subject.results).to include(suspended_instance)
+        expect(subject.results).to_not include(limited_instance)
+      end
+    end
+
     context 'with availability = "healthy"' do
       let(:params) { { availability: 'healthy' } }
 

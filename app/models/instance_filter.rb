@@ -28,7 +28,7 @@ class InstanceFilter
   def scope_for(key, value)
     case key.to_s
     when 'limited'
-      Instance.joins(:domain_block).reorder(domain_blocks: { id: :desc })
+      limited_scope(value)
     when 'allowed'
       Instance.joins(:domain_allow).reorder(domain_allows: { id: :desc })
     when 'by_domain'
@@ -37,6 +37,17 @@ class InstanceFilter
       availability_scope(value)
     else
       raise Mastodon::InvalidParameterError, "Unknown filter: #{key}"
+    end
+  end
+
+  def limited_scope(value)
+    case value
+    when 'suspended', 'suspend'
+      Instance.joins(:domain_block).where(domain_blocks: { severity: :suspend }).reorder(domain_blocks: { id: :desc })
+    when 'limited', 'silence'
+      Instance.joins(:domain_block).where.not(domain_blocks: { severity: :suspend }).reorder(domain_blocks: { id: :desc })
+    else
+      Instance.joins(:domain_block).reorder(domain_blocks: { id: :desc })
     end
   end
 
