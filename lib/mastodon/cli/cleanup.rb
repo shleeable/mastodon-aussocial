@@ -4,6 +4,8 @@ require_relative 'base'
 
 module Mastodon::CLI
   class Cleanup < Base
+    include ActionView::Helpers::NumberHelper
+
     option :local_suspended, type: :boolean
     option :remote_suspended, type: :boolean
     option :local_deleted, type: :boolean
@@ -46,12 +48,46 @@ module Mastodon::CLI
 
       combined_scope = scopes.reduce(:or).without_instance_actor
 
-      _, deleted = parallelize_with_progress(combined_scope) do |account|
-        DeleteAccountService.new.call(account, reserve_username: false, reserve_email: false, skip_side_effects: true) unless dry_run?
-        1
+      progress = create_progress_bar(combined_scope.count)
+      total_deleted = 0
+      total_statuses = 0
+      total_media_count = 0
+      total_media_bytes = 0
+
+      combined_scope.find_each do |account|
+        acct = account.acct
+        statuses_count = account.statuses.count
+        media_attachments = account.media_attachments
+        media_count = media_attachments.count
+        media_bytes = media_attachments.sum(MediaAttachment.combined_media_file_size)
+
+        formatted_size = number_to_human_size(media_bytes)
+
+        if dry_run?
+          progress.log("Would delete @#{acct}: #{statuses_count} statuses, #{media_count} media attachments (#{formatted_size})")
+        else
+          begin
+            DeleteAccountService.new.call(account, reserve_username: false, reserve_email: false, skip_side_effects: true)
+            progress.log(pastel.green("Deleted @#{acct}: #{statuses_count} statuses, #{media_count} media attachments (#{formatted_size})"))
+          rescue => e
+            progress.log(pastel.red("Failed to delete @#{acct}: #{e.message}"))
+            next
+          end
+        end
+
+        total_deleted += 1
+        total_statuses += statuses_count
+        total_media_count += media_count
+        total_media_bytes += media_bytes
+        progress.increment
       end
 
-      say("OK, cleaned up #{deleted} accounts#{dry_run_mode_suffix}", :green)
+      progress.finish
+
+      say(
+        "OK, cleaned up #{total_deleted} accounts, #{total_statuses} statuses, #{total_media_count} media attachments (approx. #{number_to_human_size(total_media_bytes)})#{dry_run_mode_suffix}",
+        :green
+      )
     end
   end
 end

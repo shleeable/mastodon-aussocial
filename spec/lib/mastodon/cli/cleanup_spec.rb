@@ -12,28 +12,12 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
   it_behaves_like 'CLI Command'
 
-  def stub_parallelize_with_progress!
-    allow(cli).to receive(:parallelize_with_progress) do |scope, &block|
-      aggregate = 0
-      total = 0
-
-      scope.reorder(nil).find_each do |record|
-        value = block.call(record)
-        aggregate += value if value.is_a?(Integer)
-        total += 1
-      end
-
-      [total, aggregate]
-    end
-  end
-
   describe '#accounts' do
     let(:action) { :accounts }
     let(:delete_account_service) { instance_double(DeleteAccountService, call: nil) }
 
     before do
       allow(DeleteAccountService).to receive(:new).and_return(delete_account_service)
-      stub_parallelize_with_progress!
     end
 
     context 'when no option is given' do
@@ -57,7 +41,7 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
         it 'deletes local suspended accounts only' do
           expect { subject }
-            .to output_results('OK, cleaned up 1 accounts')
+            .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
 
           expect(delete_account_service).to have_received(:call).with(local_suspended, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to_not have_received(:call).with(remote_suspended, any_args)
@@ -71,7 +55,7 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
         it 'deletes remote suspended accounts only' do
           expect { subject }
-            .to output_results('OK, cleaned up 1 accounts')
+            .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
 
           expect(delete_account_service).to have_received(:call).with(remote_suspended, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to_not have_received(:call).with(local_suspended, any_args)
@@ -83,7 +67,7 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
         it 'deletes local deleted accounts only' do
           expect { subject }
-            .to output_results('OK, cleaned up 1 accounts')
+            .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
 
           expect(delete_account_service).to have_received(:call).with(local_deleted, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to_not have_received(:call).with(local_suspended, any_args)
@@ -95,7 +79,7 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
         it 'deletes accounts on suspended instances only and keeps domain block intact' do
           expect { subject }
-            .to output_results('OK, cleaned up 1 accounts')
+            .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
 
           expect(delete_account_service).to have_received(:call).with(account_on_suspended_instance, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(DomainBlock.exists?(id: domain_block.id)).to be(true)
@@ -107,7 +91,7 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
         it 'deletes all matching accounts' do
           expect { subject }
-            .to output_results('OK, cleaned up 4 accounts')
+            .to output_results('OK, cleaned up 4 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
 
           expect(delete_account_service).to have_received(:call).with(local_suspended, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to have_received(:call).with(remote_suspended, reserve_username: false, reserve_email: false, skip_side_effects: true).once
@@ -122,7 +106,7 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
           it 'outputs dry run results and does not delete accounts' do
             expect { subject }
-              .to output_results('OK, cleaned up 4 accounts (DRY RUN)')
+              .to output_results('OK, cleaned up 4 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes) (DRY RUN)')
 
             expect(delete_account_service).to_not have_received(:call)
           end
