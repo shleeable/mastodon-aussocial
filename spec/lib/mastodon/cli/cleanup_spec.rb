@@ -40,12 +40,25 @@ RSpec.describe Mastodon::CLI::Cleanup do
       let!(:failing_account) { Fabricate(:account, domain: 'failing-instance.com') }
       let!(:unavailable_domain) { Fabricate(:unavailable_domain, domain: 'unavailable-instance.com') }
       let!(:unavailable_account) { Fabricate(:account, domain: 'unavailable-instance.com') }
+      let!(:specific_domain_account) { Fabricate(:account, domain: 'target-domain.com') }
 
       let!(:active_local_account) { Fabricate(:account, domain: nil) }
       let!(:active_remote_account) { Fabricate(:account, domain: 'active-instance.com') }
 
       before do
         allow(DeliveryFailureTracker).to receive(:warning_domains).and_return(['failing-instance.com'])
+      end
+
+      context 'with --domain' do
+        let(:options) { { domain: 'target-domain.com' } }
+
+        it 'deletes remote accounts from specified domain only' do
+          expect { subject }
+            .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
+
+          expect(delete_account_service).to have_received(:call).with(specific_domain_account, reserve_username: false, reserve_email: false, skip_side_effects: true).once
+          expect(delete_account_service).to_not have_received(:call).with(active_remote_account, any_args)
+        end
       end
 
       context 'with --local-suspended' do

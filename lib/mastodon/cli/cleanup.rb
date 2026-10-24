@@ -6,6 +6,7 @@ module Mastodon::CLI
   class Cleanup < Base
     include ActionView::Helpers::NumberHelper
 
+    option :domain, type: :string
     option :local_suspended, type: :boolean
     option :remote_suspended, type: :boolean
     option :local_deleted, type: :boolean
@@ -17,10 +18,11 @@ module Mastodon::CLI
     option :all, type: :boolean
     option :concurrency, type: :numeric, default: 5, aliases: [:c]
     option :dry_run, type: :boolean
-    desc 'accounts', 'Clean up suspended, deleted, limited, or failing accounts, posts, and media from DB and S3'
+    desc 'accounts', 'Clean up suspended, deleted, limited, domain-specific, or failing accounts, posts, and media from DB and S3'
     long_desc <<-LONG_DESC
       Clean up accounts and remove all evidence of those accounts, their posts, and their media from DB and S3.
 
+      With the --domain DOMAIN option, all remote accounts from a specific domain will be purged.
       With the --local-suspended option, all suspended local accounts will be purged.
       With the --remote-suspended option, all suspended remote accounts will be purged.
       With the --local-deleted option, all deleted local accounts will be purged.
@@ -32,11 +34,16 @@ module Mastodon::CLI
       With the --all option, all of the above categories will be purged.
     LONG_DESC
     def accounts
-      unless options[:local_suspended] || options[:remote_suspended] || options[:local_deleted] || options[:suspended_instances] || options[:limited_instances] || options[:reject_media_instances] || options[:availability_failing] || options[:availability_unavailable] || options[:all]
-        fail_with_message 'Please specify at least one cleanup category (--local-suspended, --remote-suspended, --local-deleted, --suspended-instances, --limited-instances, --reject-media-instances, --availability-failing, --availability-unavailable, or --all)'
+      unless options[:domain].present? || options[:local_suspended] || options[:remote_suspended] || options[:local_deleted] || options[:suspended_instances] || options[:limited_instances] || options[:reject_media_instances] || options[:availability_failing] || options[:availability_unavailable] || options[:all]
+        fail_with_message 'Please specify at least one cleanup category (--domain, --local-suspended, --remote-suspended, --local-deleted, --suspended-instances, --limited-instances, --reject-media-instances, --availability-failing, --availability-unavailable, or --all)'
       end
 
       scopes = []
+
+      if options[:domain].present?
+        target_domain = TagManager.instance.normalize_domain(options[:domain])
+        scopes << Account.remote.where(domain: target_domain)
+      end
 
       if options[:local_suspended] || options[:all]
         scopes << Account.local.suspended
