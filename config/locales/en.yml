@@ -750,6 +750,7 @@ en:
       moderation:
         all: All
         limited: Limited
+        reject_media: Media Rejected
         suspended: Suspended
         title: Moderation
       moderation_notes:

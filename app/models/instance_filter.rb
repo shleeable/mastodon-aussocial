@@ -45,7 +45,9 @@ class InstanceFilter
     when 'suspended', 'suspend'
       Instance.joins(:domain_block).where(domain_blocks: { severity: :suspend }).reorder(domain_blocks: { id: :desc })
     when 'limited', 'silence'
-      Instance.joins(:domain_block).where.not(domain_blocks: { severity: :suspend }).reorder(domain_blocks: { id: :desc })
+      Instance.joins(:domain_block).where(domain_blocks: { severity: :silence }).reorder(domain_blocks: { id: :desc })
+    when 'reject_media'
+      Instance.joins(:domain_block).where(domain_blocks: { reject_media: true }).reorder(domain_blocks: { id: :desc })
     else
       Instance.joins(:domain_block).reorder(domain_blocks: { id: :desc })
     end

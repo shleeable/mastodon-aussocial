@@ -35,6 +35,8 @@ RSpec.describe Mastodon::CLI::Cleanup do
       let!(:account_on_suspended_instance) { Fabricate(:account, domain: 'suspended-instance.com') }
       let!(:limited_domain_block) { Fabricate(:domain_block, domain: 'limited-instance.com', severity: :silence) }
       let!(:account_on_limited_instance) { Fabricate(:account, domain: 'limited-instance.com') }
+      let!(:reject_media_domain_block) { Fabricate(:domain_block, domain: 'reject-media-instance.com', severity: :noop, reject_media: true) }
+      let!(:account_on_reject_media_instance) { Fabricate(:account, domain: 'reject-media-instance.com') }
       let!(:failing_account) { Fabricate(:account, domain: 'failing-instance.com') }
       let!(:unavailable_domain) { Fabricate(:unavailable_domain, domain: 'unavailable-instance.com') }
       let!(:unavailable_account) { Fabricate(:account, domain: 'unavailable-instance.com') }
@@ -108,6 +110,17 @@ RSpec.describe Mastodon::CLI::Cleanup do
         end
       end
 
+      context 'with --rejectMediaInstances' do
+        let(:options) { { rejectMediaInstances: true } }
+
+        it 'deletes accounts on instances rejecting media' do
+          expect { subject }
+            .to output_results('OK, cleaned up 1 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
+
+          expect(delete_account_service).to have_received(:call).with(account_on_reject_media_instance, reserve_username: false, reserve_email: false, skip_side_effects: true).once
+        end
+      end
+
       context 'with --availabilityFailing' do
         let(:options) { { availabilityFailing: true } }
 
@@ -135,13 +148,14 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
         it 'deletes all matching accounts' do
           expect { subject }
-            .to output_results('OK, cleaned up 7 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
+            .to output_results('OK, cleaned up 8 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes)')
 
           expect(delete_account_service).to have_received(:call).with(local_suspended, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to have_received(:call).with(remote_suspended, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to have_received(:call).with(local_deleted, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to have_received(:call).with(account_on_suspended_instance, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to have_received(:call).with(account_on_limited_instance, reserve_username: false, reserve_email: false, skip_side_effects: true).once
+          expect(delete_account_service).to have_received(:call).with(account_on_reject_media_instance, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to have_received(:call).with(failing_account, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to have_received(:call).with(unavailable_account, reserve_username: false, reserve_email: false, skip_side_effects: true).once
           expect(delete_account_service).to_not have_received(:call).with(active_local_account, any_args)
@@ -153,7 +167,7 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
           it 'outputs dry run results and does not delete accounts' do
             expect { subject }
-              .to output_results('OK, cleaned up 7 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes) (DRY RUN)')
+              .to output_results('OK, cleaned up 8 accounts, 0 statuses, 0 media attachments (approx. 0 Bytes) (DRY RUN)')
 
             expect(delete_account_service).to_not have_received(:call)
           end

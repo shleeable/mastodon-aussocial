@@ -11,6 +11,7 @@ module Mastodon::CLI
     option :local_deleted, type: :boolean
     option :suspended_instances, type: :boolean
     option :limited_instances, type: :boolean
+    option :reject_media_instances, type: :boolean, aliases: [:rejectMediaInstances]
     option :availability_failing, type: :boolean, aliases: [:availabilityFailing]
     option :availability_unavailable, type: :boolean, aliases: [:availabilityUnavailable]
     option :all, type: :boolean
@@ -25,13 +26,14 @@ module Mastodon::CLI
       With the --local-deleted option, all deleted local accounts will be purged.
       With the --suspended-instances option, all remote accounts from suspended instances will be purged.
       With the --limited-instances option, all remote accounts from limited/silenced instances will be purged.
+      With the --reject-media-instances / --rejectMediaInstances option, all remote accounts from instances rejecting media will be purged.
       With the --availability-failing / --availabilityFailing option, all remote accounts from failing instances will be purged.
       With the --availability-unavailable / --availabilityUnavailable option, all remote accounts from unavailable instances will be purged.
       With the --all option, all of the above categories will be purged.
     LONG_DESC
     def accounts
-      unless options[:local_suspended] || options[:remote_suspended] || options[:local_deleted] || options[:suspended_instances] || options[:limited_instances] || options[:availability_failing] || options[:availability_unavailable] || options[:all]
-        fail_with_message 'Please specify at least one cleanup category (--local-suspended, --remote-suspended, --local-deleted, --suspended-instances, --limited-instances, --availability-failing, --availability-unavailable, or --all)'
+      unless options[:local_suspended] || options[:remote_suspended] || options[:local_deleted] || options[:suspended_instances] || options[:limited_instances] || options[:reject_media_instances] || options[:availability_failing] || options[:availability_unavailable] || options[:all]
+        fail_with_message 'Please specify at least one cleanup category (--local-suspended, --remote-suspended, --local-deleted, --suspended-instances, --limited-instances, --reject-media-instances, --availability-failing, --availability-unavailable, or --all)'
       end
 
       scopes = []
@@ -54,6 +56,10 @@ module Mastodon::CLI
 
       if options[:limited_instances] || options[:all]
         scopes << Account.remote.where(domain: DomainBlock.silence.select(:domain))
+      end
+
+      if options[:reject_media_instances] || options[:all]
+        scopes << Account.remote.where(domain: DomainBlock.where(reject_media: true).select(:domain))
       end
 
       if options[:availability_failing] || options[:all]
