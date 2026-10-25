@@ -109,7 +109,7 @@ module Mastodon::CLI
       removed   = 0
       progress  = create_progress_bar(scope.count)
 
-      scope.find_each do |media_attachment|
+      scope.reorder(nil).find_each do |media_attachment|
         media_attachment.destroy!
 
         removed += 1
