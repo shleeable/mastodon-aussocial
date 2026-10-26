@@ -76,6 +76,7 @@ module Mastodon::CLI
         c.table_name = 'statuses_to_be_deleted'
       end
 
+      Object.send(:remove_const, :StatusToBeDeleted) if Object.const_defined?(:StatusToBeDeleted)
       Object.const_set(:StatusToBeDeleted, klass)
 
       scope     = StatusToBeDeleted
@@ -88,13 +89,17 @@ module Mastodon::CLI
         processed += ids.count
         removed   += Status.unscoped.where(id: ids).delete_all
         progress.increment
+      rescue => e
+        progress.log pastel.red("Error deleting batch of statuses: #{e}")
       end
 
       progress.stop
 
-      ActiveRecord::Base.connection.drop_table('statuses_to_be_deleted')
+      ActiveRecord::Base.connection.drop_table('statuses_to_be_deleted') if ActiveRecord::Base.connection.table_exists?('statuses_to_be_deleted')
 
       say("Done after #{Time.now.to_f - start_at}s, removed #{removed} out of #{processed} statuses.", :green)
+    ensure
+      Object.send(:remove_const, :StatusToBeDeleted) if Object.const_defined?(:StatusToBeDeleted)
     end
 
     def remove_orphans_media_attachments
@@ -130,6 +135,11 @@ module Mastodon::CLI
 
       begin
         unless options[:continue] && ActiveRecord::Base.connection.table_exists?('conversations_to_be_deleted')
+          if ActiveRecord::Base.connection.index_name_exists?(:statuses, :index_statuses_conversation_id)
+            say('Cleaning up index_statuses_conversation_id from a previously crashed run...')
+            ActiveRecord::Base.connection.remove_index(:statuses, name: :index_statuses_conversation_id, if_exists: true)
+          end
+
           say('Creating temporary database indices...')
 
           ActiveRecord::Base.connection.add_index(:statuses, :conversation_id, name: :index_statuses_conversation_id, algorithm: :concurrently, if_not_exists: true)
@@ -153,7 +163,8 @@ module Mastodon::CLI
           c.table_name = 'conversations_to_be_deleted'
         end
 
-        Object.const_set(:ConversationsToBeDeleted, klass) unless Object.const_defined?(:ConversationsToBeDeleted)
+        Object.send(:remove_const, :ConversationsToBeDeleted) if Object.const_defined?(:ConversationsToBeDeleted)
+        Object.const_set(:ConversationsToBeDeleted, klass)
 
         scope     = ConversationsToBeDeleted
         processed = 0
@@ -179,6 +190,7 @@ module Mastodon::CLI
       ensure
         say('Removing temporary database indices to restore write performance...')
         ActiveRecord::Base.connection.remove_index(:statuses, name: :index_statuses_conversation_id, if_exists: true)
+        Object.send(:remove_const, :ConversationsToBeDeleted) if Object.const_defined?(:ConversationsToBeDeleted)
       end
     end
 
