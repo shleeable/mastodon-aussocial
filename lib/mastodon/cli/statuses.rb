@@ -79,18 +79,27 @@ module Mastodon::CLI
       Object.send(:remove_const, :StatusToBeDeleted) if Object.const_defined?(:StatusToBeDeleted)
       Object.const_set(:StatusToBeDeleted, klass)
 
-      scope     = StatusToBeDeleted
-      processed = 0
-      removed   = 0
-      progress  = create_progress_bar(scope.count.fdiv(options[:batch_size]).ceil)
+      scope         = StatusToBeDeleted
+      total_records = scope.count
+      total_batches = total_records.fdiv(options[:batch_size]).ceil
+      processed     = 0
+      removed       = 0
+      current_batch = 0
+
+      say("Found #{total_records} statuses to delete (#{total_batches} batches of #{options[:batch_size]})...")
+
+      progress = create_progress_bar(total_batches)
 
       scope.reorder(nil).in_batches(of: options[:batch_size]) do |relation|
-        ids        = relation.pluck(:id)
-        processed += ids.count
-        removed   += Status.unscoped.where(id: ids).delete_all
+        current_batch += 1
+        ids            = relation.pluck(:id)
+        processed     += ids.count
+        batch_removed  = Status.unscoped.where(id: ids).delete_all
+        removed       += batch_removed
+        progress.log("Batch #{current_batch}/#{total_batches}: Processed #{processed}/#{total_records} statuses (removed #{batch_removed} in this batch)") if options[:verbose]
         progress.increment
       rescue => e
-        progress.log pastel.red("Error deleting batch of statuses: #{e}")
+        progress.log pastel.red("Error deleting batch #{current_batch}/#{total_batches} of statuses: #{e}")
       end
 
       progress.stop
@@ -172,18 +181,27 @@ module Mastodon::CLI
         Object.send(:remove_const, :ConversationsToBeDeleted) if Object.const_defined?(:ConversationsToBeDeleted)
         Object.const_set(:ConversationsToBeDeleted, klass)
 
-        scope     = ConversationsToBeDeleted
-        processed = 0
-        removed   = 0
-        progress  = create_progress_bar(scope.count.fdiv(options[:batch_size]).ceil)
+        scope         = ConversationsToBeDeleted
+        total_records = scope.count
+        total_batches = total_records.fdiv(options[:batch_size]).ceil
+        processed     = 0
+        removed       = 0
+        current_batch = 0
+
+        say("Found #{total_records} conversations to delete (#{total_batches} batches of #{options[:batch_size]})...")
+
+        progress = create_progress_bar(total_batches)
 
         scope.reorder(nil).in_batches(of: options[:batch_size]) do |relation|
-          ids        = relation.pluck(:id)
-          processed += ids.count
-          removed   += Conversation.unscoped.where(id: ids).delete_all
+          current_batch += 1
+          ids            = relation.pluck(:id)
+          processed     += ids.count
+          batch_removed  = Conversation.unscoped.where(id: ids).delete_all
+          removed       += batch_removed
+          progress.log("Batch #{current_batch}/#{total_batches}: Processed #{processed}/#{total_records} conversations (removed #{batch_removed} in this batch)") if options[:verbose]
           progress.increment
         rescue => e
-          progress.log pastel.red("Error deleting batch of conversations: #{e}")
+          progress.log pastel.red("Error deleting batch #{current_batch}/#{total_batches} of conversations: #{e}")
         end
 
         progress.stop
