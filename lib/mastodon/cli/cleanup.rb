@@ -145,19 +145,20 @@ module Mastodon::CLI
       If neither flag is specified, both suspended and limited instances will be queried.
     LONG_DESC
     def refreshhealth
-      domains = []
+      severities = []
 
       if options[:suspended] || (!options[:suspended] && !options[:limited])
-        domains += DomainBlock.suspend.pluck(:domain)
+        severities << :suspend
       end
 
       if options[:limited] || (!options[:suspended] && !options[:limited])
-        domains += DomainBlock.silence.pluck(:domain)
+        severities << :silence
       end
 
-      domains.uniq!
+      scope = DomainBlock.where(severity: severities)
 
-      processed, alive = parallelize_with_progress(domains) do |domain|
+      processed, alive = parallelize_with_progress(scope) do |domain_block|
+        domain = domain_block.domain
         is_alive = false
 
         begin

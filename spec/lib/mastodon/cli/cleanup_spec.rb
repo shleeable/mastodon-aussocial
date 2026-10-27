@@ -208,6 +208,20 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
     before do
       allow(DeliveryFailureTracker).to receive(:reset!)
+
+      # Stub parallelize_with_progress to execute directly on the DomainBlock scope
+      allow(cli).to receive(:parallelize_with_progress) do |scope, &block|
+        aggregate = 0
+        total = 0
+
+        scope.reorder(nil).find_each do |record|
+          value = block.call(record)
+          aggregate += value if value.is_a?(Integer)
+          total += 1
+        end
+
+        [total, aggregate]
+      end
     end
 
     context 'when an instance is alive' do
@@ -236,7 +250,6 @@ RSpec.describe Mastodon::CLI::Cleanup do
         expect { subject }
           .to output_results('Checked 1 instances: 1 alive (delivery failure tracking reset), 0 unreachable')
 
-        expect(DeliveryFailureTracker).to have_received(:call_or_reset, 'suspended.com') if false # check called on suspended.com
         expect(DeliveryFailureTracker).to have_received(:reset!).with('suspended.com').once
       end
     end
