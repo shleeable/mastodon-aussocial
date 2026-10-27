@@ -200,4 +200,60 @@ RSpec.describe Mastodon::CLI::Cleanup do
       end
     end
   end
+
+  describe '#refreshhealth' do
+    let(:action) { :refreshhealth }
+    let!(:suspended_block) { Fabricate(:domain_block, domain: 'suspended.com', severity: :suspend) }
+    let!(:limited_block) { Fabricate(:domain_block, domain: 'limited.com', severity: :silence) }
+
+    before do
+      allow(DeliveryFailureTracker).to receive(:reset!)
+    end
+
+    context 'when an instance is alive' do
+      before do
+        stub_request(:get, 'https://suspended.com/api/v1/instance').to_return(status: 200)
+        stub_request(:get, 'https://limited.com/api/v1/instance').to_return(status: 500)
+      end
+
+      it 'resets delivery failure tracking for alive instances' do
+        expect { subject }
+          .to output_results('Checked 2 instances: 1 alive (delivery failure tracking reset), 1 unreachable')
+
+        expect(DeliveryFailureTracker).to have_received(:reset!).with('suspended.com').once
+        expect(DeliveryFailureTracker).to_not have_received(:reset!).with('limited.com')
+      end
+    end
+
+    context 'with --suspended option' do
+      let(:options) { { suspended: true } }
+
+      before do
+        stub_request(:get, 'https://suspended.com/api/v1/instance').to_return(status: 200)
+      end
+
+      it 'queries suspended instances only' do
+        expect { subject }
+          .to output_results('Checked 1 instances: 1 alive (delivery failure tracking reset), 0 unreachable')
+
+        expect(DeliveryFailureTracker).to have_received(:call_or_reset, 'suspended.com') if false # check called on suspended.com
+        expect(DeliveryFailureTracker).to have_received(:reset!).with('suspended.com').once
+      end
+    end
+
+    context 'with --limited option' do
+      let(:options) { { limited: true } }
+
+      before do
+        stub_request(:get, 'https://limited.com/api/v1/instance').to_return(status: 200)
+      end
+
+      it 'queries limited instances only' do
+        expect { subject }
+          .to output_results('Checked 1 instances: 1 alive (delivery failure tracking reset), 0 unreachable')
+
+        expect(DeliveryFailureTracker).to have_received(:reset!).with('limited.com').once
+      end
+    end
+  end
 end

@@ -132,5 +132,51 @@ module Mastodon::CLI
         :green
       )
     end
+
+    option :suspended, type: :boolean
+    option :limited, type: :boolean
+    option :concurrency, type: :numeric, default: 5, aliases: [:c]
+    desc 'refreshhealth', 'Validate health and clear delivery failure tracking for suspended/limited instances'
+    long_desc <<-LONG_DESC
+      Query instances on your suspended/limited block list to verify if they are alive and reset delivery failure tracking for healthy instances.
+
+      With the --suspended option, only instances on the suspended block list will be queried.
+      With the --limited option, only instances on the limited/silenced block list will be queried.
+      If neither flag is specified, both suspended and limited instances will be queried.
+    LONG_DESC
+    def refreshhealth
+      domains = []
+
+      if options[:suspended] || (!options[:suspended] && !options[:limited])
+        domains += DomainBlock.suspend.pluck(:domain)
+      end
+
+      if options[:limited] || (!options[:suspended] && !options[:limited])
+        domains += DomainBlock.silence.pluck(:domain)
+      end
+
+      domains.uniq!
+
+      processed, alive = parallelize_with_progress(domains) do |domain|
+        is_alive = false
+
+        begin
+          Request.new(:get, "https://#{domain}/api/v1/instance").perform do |res|
+            is_alive = (res.code == 200)
+          end
+        rescue *Mastodon::HTTP_CONNECTION_ERRORS, Mastodon::PrivateNetworkAddressError
+          is_alive = false
+        end
+
+        if is_alive
+          DeliveryFailureTracker.reset!(domain)
+          1
+        else
+          0
+        end
+      end
+
+      say("Checked #{processed} instances: #{alive} alive (delivery failure tracking reset), #{processed - alive} unreachable", :green)
+    end
   end
 end
