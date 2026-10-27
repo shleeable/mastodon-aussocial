@@ -18,6 +18,19 @@ RSpec.describe Mastodon::CLI::Cleanup do
 
     before do
       allow(DeleteAccountService).to receive(:new).and_return(delete_account_service)
+
+      allow(cli).to receive(:parallelize_with_progress) do |scope, &block|
+        aggregate = 0
+        total = 0
+
+        scope.reorder(nil).find_each do |record|
+          value = block.call(record)
+          aggregate += value if value.is_a?(Integer)
+          total += 1
+        end
+
+        [total, aggregate]
+      end
     end
 
     context 'when no option is given' do
