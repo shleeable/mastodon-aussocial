@@ -1,16 +1,12 @@
 # frozen_string_literal: true
 
 class Admin::Fasp::ProvidersController < Admin::BaseController
-  before_action :set_provider, only: [:show, :edit, :update, :destroy]
+  before_action :set_provider, only: [:edit, :update, :destroy]
 
   def index
     authorize [:admin, :fasp, :provider], :index?
 
     @providers = Fasp::Provider.order(confirmed: :asc, created_at: :desc)
-  end
-
-  def show
-    authorize [:admin, @provider], :show?
   end
 
   def edit
