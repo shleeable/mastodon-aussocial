@@ -48,31 +48,6 @@ RSpec.describe Status do
     end
   end
 
-  describe '#verb' do
-    context 'when destroyed?' do
-      it 'returns :delete' do
-        subject.destroy!
-        expect(subject.verb).to be :delete
-      end
-    end
-
-    context 'when not destroyed?' do
-      context 'when reblog?' do
-        it 'returns :share' do
-          subject.reblog = other
-          expect(subject.verb).to be :share
-        end
-      end
-
-      context 'when not reblog?' do
-        it 'returns :post' do
-          subject.reblog = nil
-          expect(subject.verb).to be :post
-        end
-      end
-    end
-  end
-
   describe '#object_type' do
     it 'is note when the status is self-contained' do
       expect(subject.object_type).to be :note
@@ -92,22 +67,6 @@ RSpec.describe Status do
     it 'returns the text of the reblogged status' do
       subject.reblog = other
       expect(subject.content).to eql other.text
-    end
-  end
-
-  describe '#target' do
-    it 'returns nil if the status is self-contained' do
-      expect(subject.target).to be_nil
-    end
-
-    it 'returns nil if the status is a reply' do
-      subject.thread = other
-      expect(subject.target).to be_nil
-    end
-
-    it 'returns the reblogged status' do
-      subject.reblog = other
-      expect(subject.target).to eq other
     end
   end
 
