@@ -583,36 +583,10 @@ module Mastodon
       EOF
     end
 
-    # Installs the triggers necessary to perform a concurrent column rename on
-    # MySQL.
-    def install_rename_triggers_for_mysql(trigger, table, old, new)
-      execute <<-EOF.strip_heredoc
-      CREATE TRIGGER #{trigger}_insert
-      BEFORE INSERT
-      ON #{table}
-      FOR EACH ROW
-      SET NEW.#{new} = NEW.#{old}
-      EOF
-
-      execute <<-EOF.strip_heredoc
-      CREATE TRIGGER #{trigger}_update
-      BEFORE UPDATE
-      ON #{table}
-      FOR EACH ROW
-      SET NEW.#{new} = NEW.#{old}
-      EOF
-    end
-
     # Removes the triggers used for renaming a PostgreSQL column concurrently.
     def remove_rename_triggers_for_postgresql(table, trigger)
       execute("DROP TRIGGER IF EXISTS #{trigger} ON #{table}")
       execute("DROP FUNCTION IF EXISTS #{trigger}()")
-    end
-
-    # Removes the triggers used for renaming a MySQL column concurrently.
-    def remove_rename_triggers_for_mysql(trigger)
-      execute("DROP TRIGGER IF EXISTS #{trigger}_insert")
-      execute("DROP TRIGGER IF EXISTS #{trigger}_update")
     end
 
     # Returns the (base) name to use for triggers when renaming columns.
