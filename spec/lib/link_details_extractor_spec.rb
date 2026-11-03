@@ -50,7 +50,6 @@ RSpec.describe LinkDetailsExtractor do
       <head>
         <title>Man bites dog</title>
         <meta name="descripTION" content="A dog&#39;s tale">
-        <link rel="pretty IcoN" href="/favicon.ico">
       </head>
       </html>
     HTML
@@ -60,8 +59,7 @@ RSpec.describe LinkDetailsExtractor do
         .to have_attributes(
           title: eq('Man bites dog'),
           description: eq("A dog's tale"),
-          language: eq('en'),
-          icon: eq('https://example.com/favicon.ico')
+          language: eq('en')
         )
     end
   end

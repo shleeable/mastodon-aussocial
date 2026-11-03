@@ -45,20 +45,8 @@ class LinkDetailsExtractor
       json['@type']
     end
 
-    def image
-      obj = first_of_hash(json['image'])
-
-      return obj['url'] if obj.is_a?(Hash)
-
-      obj
-    end
-
     def date_published
       json['datePublished']
-    end
-
-    def date_modified
-      json['dateModified']
     end
 
     def author_name
@@ -72,10 +60,6 @@ class LinkDetailsExtractor
 
     def publisher_name
       publisher['name']
-    end
-
-    def publisher_logo
-      publisher.dig('logo', 'url')
     end
 
     def valid?
@@ -210,10 +194,6 @@ class LinkDetailsExtractor
 
   def language
     valid_locale_or_nil(structured_data&.language || opengraph_tag('og:locale') || document.root.attr('lang'))
-  end
-
-  def icon
-    valid_url_or_nil(structured_data&.publisher_icon || link_tag('apple-touch-icon') || link_tag('icon'))
   end
 
   private
