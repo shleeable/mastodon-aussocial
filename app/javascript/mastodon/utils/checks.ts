@@ -1,15 +1,3 @@
-export function isValidUrl(
-  url: string,
-  allowedProtocols = ['https:'],
-): boolean {
-  try {
-    const parsedUrl = new URL(url);
-    return allowedProtocols.includes(parsedUrl.protocol);
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Checks if the input string is probably a URL without a protocol. Note this is not full URL validation,
  * and is mostly used to detect link-like inputs.
