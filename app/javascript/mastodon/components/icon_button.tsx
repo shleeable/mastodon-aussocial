@@ -14,7 +14,6 @@ interface Props {
   icon: string;
   iconComponent: IconProp;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
   onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
   active?: boolean;
   expanded?: boolean;
@@ -46,7 +45,6 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       activeStyle,
       onClick,
       onKeyDown,
-      onMouseDown,
       active = false,
       disabled = false,
       animate = false,
@@ -67,16 +65,6 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       },
       [disabled, onClick],
     );
-
-    const handleMouseDown: React.MouseEventHandler<HTMLButtonElement> =
-      useCallback(
-        (e) => {
-          if (!disabled) {
-            onMouseDown?.(e);
-          }
-        },
-        [disabled, onMouseDown],
-      );
 
     const handleKeyDown: React.KeyboardEventHandler<HTMLButtonElement> =
       useCallback(
@@ -135,7 +123,6 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
         title={title}
         className={classes}
         onClick={handleClick}
-        onMouseDown={handleMouseDown}
         onKeyDown={handleKeyDown}
         style={buttonStyle}
         tabIndex={tabIndex}
