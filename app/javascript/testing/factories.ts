@@ -23,11 +23,7 @@ import type {
   CustomEmojiData,
   UnicodeEmojiData,
 } from '@/mastodon/features/emoji/types';
-import type { AccountShapeFull } from '@/mastodon/models/account';
-import {
-  accountDefaultValues,
-  createAccountFromServerJSON,
-} from '@/mastodon/models/account';
+import { createAccountFromServerJSON } from '@/mastodon/models/account';
 import type { AnnualReport } from '@/mastodon/models/annual_report';
 import { CustomEmojiFactory } from '@/mastodon/models/custom_emoji';
 import type { Poll } from '@/mastodon/models/poll';
@@ -91,32 +87,6 @@ export const accountFactoryAPI: FactoryFunction<ApiAccountJSON> = ({
   hide_collections: false,
   ...data,
 });
-
-export const accountFactoryState = (
-  options: FactoryOptions<ApiAccountJSON> = {},
-): AccountShapeFull => {
-  const accountJSON = accountFactoryAPI(options);
-  return {
-    ...accountJSON,
-    ...accountDefaultValues,
-    moved: accountJSON.moved?.id ?? null,
-    display_name_html: accountJSON.display_name,
-    note_emojified: accountJSON.note,
-    note_plain: accountJSON.note,
-    emojis: accountJSON.emojis.map((emoji) => ({
-      category: '',
-      featured: false,
-      ...emoji,
-    })),
-    fields: accountJSON.fields.map((field) => ({
-      name_emojified: field.name,
-      value_emojified: field.value,
-      value_plain: field.value,
-      ...field,
-    })),
-    roles: accountJSON.roles ?? [],
-  };
-};
 
 export const accountFactoryImmutable = (
   options: FactoryOptions<ApiAccountJSON> = {},
