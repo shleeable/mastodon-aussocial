@@ -3,7 +3,6 @@ import { useIntl } from 'react-intl';
 import classNames from 'classnames';
 
 import CloseIcon from '@/material-icons/400-24px/close.svg?react';
-import { LoadingIndicator } from 'mastodon/components/loading_indicator';
 
 import { IconButton } from '../icon_button';
 
@@ -17,7 +16,6 @@ export const Alert: React.FC<{
   onActionClick?: () => void;
   onDismiss?: () => void;
   isActive?: boolean;
-  isLoading?: boolean;
   animateFrom?: 'side' | 'below';
 }> = ({
   title,
@@ -26,7 +24,6 @@ export const Alert: React.FC<{
   onActionClick,
   onDismiss,
   isActive,
-  isLoading,
   animateFrom = 'side',
 }) => {
   const intl = useIntl();
@@ -59,13 +56,7 @@ export const Alert: React.FC<{
         </button>
       )}
 
-      {isLoading && (
-        <span className='notification-bar__loading-indicator'>
-          <LoadingIndicator />
-        </span>
-      )}
-
-      {onDismiss && !isLoading && (
+      {onDismiss && (
         <IconButton
           title={intl.formatMessage({
             id: 'dismissable_banner.dismiss',
