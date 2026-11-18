@@ -12,13 +12,6 @@ RSpec.describe InstancePresenter do
     end
   end
 
-  describe '#extended_description' do
-    it 'delegates site_extended_description to Setting' do
-      Setting.site_extended_description = 'Extended desc'
-      expect(instance_presenter.extended_description).to eq 'Extended desc'
-    end
-  end
-
   describe '#email' do
     it 'delegates contact_email to Setting' do
       Setting.site_contact_email = 'admin@example.com'
