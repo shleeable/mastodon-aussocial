@@ -30,7 +30,7 @@ namespace :admin do
       resources :callbacks, only: [:index, :destroy]
     end
 
-    resources :providers, only: [:index, :show, :edit, :update, :destroy] do
+    resources :providers, only: [:index, :edit, :update, :destroy] do
       resources :debug_calls, only: [:create]
 
       resource :registration, only: [:new, :create]
