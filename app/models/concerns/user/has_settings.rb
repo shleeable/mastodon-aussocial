@@ -63,10 +63,6 @@ module User::HasSettings
     settings['web.use_system_scrollbars']
   end
 
-  def setting_noindex
-    settings['noindex']
-  end
-
   def setting_theme
     settings['theme']
   end
@@ -93,14 +89,6 @@ module User::HasSettings
 
   def setting_default_language
     settings['default_language']
-  end
-
-  def setting_aggregate_reblogs
-    settings['aggregate_reblogs']
-  end
-
-  def setting_show_application
-    settings['show_application']
   end
 
   def setting_advanced_layout
